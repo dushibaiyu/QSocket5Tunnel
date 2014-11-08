@@ -13,7 +13,7 @@ public:
 
     enum ThreadType
     {
-        THREADSIZE, //固定线程数
+        THREADSIZE , //固定线程数
         HANDLESIZE //固定每个线程处理多少连接
     };
 

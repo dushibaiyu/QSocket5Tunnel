@@ -1,9 +1,10 @@
 ﻿#include "clientsocket.h"
 #include <QHostAddress>
 #include <QThread>
+#include "userconfig.h"
 
 ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造函数在主线程执行，lambda在子线程
-    QTcpSocket(parent),socketID(socketDescriptor),userID(-1),lastsize(0)
+    QTcpSocket(parent),socketID(socketDescriptor),userID(-1),lastsize(0),aes(nullptr)
 {
     this->setSocketDescriptor(socketDescriptor);
 
@@ -17,6 +18,8 @@ ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造
 
 ClientSocket::~ClientSocket()
 {
+    if (aes != nullptr)
+        delete aes;
 }
 
 void ClientSocket::sentData(const QByteArray &data, const int id)
@@ -94,7 +97,7 @@ void ClientSocket::remoteData()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();
+    data.data = encryptData(sock->readAll());
     QByteArray buf;
     {
         QDataStream stream(&buf,QIODevice::ReadWrite);
@@ -136,6 +139,7 @@ void ClientSocket::remoteDisCon()
 
 void ClientSocket::handleNewCon(swapData &data)
 {
+    if (!decryptData(data)) return;
     QPair<QString,qint16> host;
     {
         QDataStream stream(&data.data,QIODevice::ReadWrite);
@@ -163,7 +167,7 @@ void ClientSocket::handleDisCon(swapData &data)
 void ClientSocket::handleSwapData(swapData &data)
 {
     RemoteSocket * sock = socketList.value(data.socketID,nullptr);
-    if (sock != nullptr)
+    if (sock != nullptr && decryptData(data))
     {
         sock->write(data.data);
     }
@@ -187,15 +191,33 @@ void ClientSocket::handleSwapData(swapData &data)
 
 void ClientSocket::handleUserLog(swapData &data)
 {
-    QByteArray buf;
-    QPair<QString,QString> host;
+    QPair<QString,QString> user;
     {
-        QDataStream stream(&buf,QIODevice::ReadWrite);
-        stream >> host;
+        QDataStream stream(&data.data,QIODevice::ReadWrite);
+        stream >> user;
     }
-    data.userID = 1000;
-    data.data = "123456";
-    buf.clear();
+    if (user.first.isEmpty() || user.second.isEmpty())
+    {
+        data.userID = -1;
+        data.data.clear();
+    }
+    else
+    {
+        data.userID = UserConfig::getClass().getUserId(user.first,user.second,token);
+        if (data.userID > 0 && (!token.isEmpty()))
+        {
+            this->userID = data.userID;
+            data.data = token.toUtf8();
+            if (aes != nullptr)
+                delete aes;
+            aes = new BotanAES256(token);
+        }
+        else
+        {
+            data.data.clear();
+        }
+    }
+    QByteArray buf;
     {
         QDataStream stream(&buf,QIODevice::ReadWrite);
         stream << data;
@@ -206,4 +228,35 @@ void ClientSocket::handleUserLog(swapData &data)
         ba.insert(0,'0');
     ba += buf;
     this->write(ba);
+}
+
+bool ClientSocket::decryptData(swapData &data)
+{
+    if (data.data.isEmpty()) return false;
+    return true;//TODO:加密优化，现在没有加密传输
+    if (userID ==- 1)
+    {
+        if (data.userID <= 0)
+        {
+            return false;
+        }
+        token =UserConfig::getClass().getToken(data.userID);
+        if (token.isEmpty())
+        {
+            userID = -1;
+            return false;
+        }
+        if (aes != nullptr)
+            delete aes;
+        aes = new BotanAES256(token);
+    }
+    data.data = aes->Decrypt(data.data);
+    if (data.data.isEmpty()) return false;
+    return true;
+}
+
+QByteArray ClientSocket::encryptData(const QByteArray &data)
+{
+    return data;//TODO:加密优化，现在没有加密传输
+    return aes->Encrypt(data);
 }

@@ -16,16 +16,21 @@ TEMPLATE = app
 
 CONFIG += C++11
 
-SOURCES += main.cpp \
-    tcpserver.cpp \
-    threadhandle.cpp \
-    clientsocket.cpp \
-    ../common/datastruct.cpp
+SOURCES += $$PWD/main.cpp \
+    $$PWD/tcpserver.cpp \
+    $$PWD/threadhandle.cpp \
+    $$PWD/clientsocket.cpp \
+    $$PWD/../common/datastruct.cpp \
+    $$PWD/userconfig.cpp \
+    $$PWD/../common/botanaes256.cpp
 
 HEADERS += \
-    ../common/datastruct.h \
-    tcpserver.h \
-    threadhandle.h \
-    remotesocket.h \
-    clientsocket.h
+    $$PWD/../common/datastruct.h \
+    $$PWD/tcpserver.h \
+    $$PWD/threadhandle.h \
+    $$PWD/remotesocket.h \
+    $$PWD/clientsocket.h \
+    $$PWD/userconfig.h \
+    $$PWD/../common/botanaes256.h
 
+include($$PWD/../common/3rdparty/botan/botan.pri)

@@ -5,13 +5,14 @@
 #include <QHash>
 #include "localsocket.h"
 #include "../common/datastruct.h"
+#include "../common/botanaes256.h"
 
 
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(QString serHost,qint16 serPort,qint16 localBind = 6666,QObject *parent = 0);
+    explicit TcpServer(QObject *parent = 0);
     ~TcpServer();
 signals:
     void notToServer();
@@ -19,6 +20,7 @@ signals:
     void listenState(bool);
 
 public slots:
+    void setInfo(const QString &serHost,qint16 serPort,qint16 localBind);
     void socketConnect(const QString & user,const QString & pass);
 
     void serSocketRead();
@@ -34,16 +36,20 @@ protected:
     void handleSwapData(swapData & data);
     void handleUserLog(swapData & data);
     void handleDisCon(swapData & data);
+
+    inline bool decryptData(swapData & data);
+    inline QByteArray encryptData(const QByteArray & data);
 private:
     QHash<int,LocalSocket *> * tcpClient;//管理连接的map
     qint32 userID = -1;//用户ID
-    QByteArray tocken;
+    QString tocken;
     QTcpSocket * serverSocket;
     bool isSerCon;
     QString serHost;
     qint16 serPort;
     qint16 localBind;
     qulonglong lastsize;
+    BotanAES256 * aes;
 };
 
 #endif // TcpServer_H

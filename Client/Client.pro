@@ -16,11 +16,15 @@ CONFIG += C++11
 SOURCES += main.cpp\
         mainwindow.cpp \
     ../common/datastruct.cpp \
-    tcpserver.cpp
+    tcpserver.cpp \
+    ../common/botanaes256.cpp
 
 HEADERS  += mainwindow.h \
     ../common/datastruct.h \
     tcpserver.h \
-    localsocket.h
+    localsocket.h \
+    ../common/botanaes256.h
 
 FORMS    += mainwindow.ui
+
+include($$PWD/../common/3rdparty/botan/botan.pri)

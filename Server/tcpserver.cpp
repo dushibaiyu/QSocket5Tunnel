@@ -1,12 +1,11 @@
 ﻿#include "tcpserver.h"
 #include "threadhandle.h"
+#include "userconfig.h"
 
 TcpServer::TcpServer(QObject *parent) :
     QTcpServer(parent)
 {
      tcpClient = new  QMap<int,ClientSocket *>;
-     ThreadHandle::getClass().initThreadType(ThreadHandle::THREADSIZE,3);//TODO: 初始化线程管理类,现在设置为开3个固定线程
-     this->setMaxPendingConnections(15000);
 }
 
 TcpServer::~TcpServer()

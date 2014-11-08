@@ -3,8 +3,8 @@
 #include <QtEndian>
 #include <QHostAddress>
 
-TcpServer::TcpServer(QString serHost,qint16 serPort,qint16 localBind,QObject *parent) :
-    QTcpServer(parent),serHost(serHost),serPort(serPort),localBind(localBind),lastsize(0)
+TcpServer::TcpServer(QObject *parent) :
+    QTcpServer(parent),lastsize(0),aes(nullptr)
 {
      tcpClient = new  QHash<int,LocalSocket *>;
      serverSocket = new QTcpSocket(this);
@@ -40,7 +40,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
             stream << host;
             //qDebug() << thisHost << thisPort;
         }
-        data.data = buf;
+        data.data = encryptData(buf);
         buf.clear();
         {
             QDataStream stream(&buf,QIODevice::ReadWrite);
@@ -182,6 +182,13 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
     sock->write(response); // notify success and proceed with remote connection
 }
 
+void TcpServer::setInfo(const QString &serHost, qint16 serPort, qint16 localBind)
+{
+    this->serHost = serHost;
+    this->serPort = serPort;
+    this->localBind = localBind;
+}
+
 void TcpServer::socketConnect(const QString &user, const QString &pass)
 {
     serverSocket->connectToHost(serHost,serPort);
@@ -279,7 +286,7 @@ void TcpServer::LocalSocketRead()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();
+    data.data = encryptData(sock->readAll());
     QByteArray  buf;
     {
         QDataStream stream(&buf,QIODevice::ReadWrite);
@@ -332,8 +339,7 @@ void TcpServer::handleDisCon(swapData &data)
 void TcpServer::handleSwapData(swapData &data)
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    //qDebug() << "//qDebug() << data.socketID;" << data.socketID << sock;
-    if (sock != nullptr)
+    if (sock != nullptr && decryptData(data))
     {
         sock->write(data.data);
     }
@@ -357,8 +363,16 @@ void TcpServer::handleSwapData(swapData &data)
 
 void TcpServer::handleUserLog(swapData &data)
 {
+    if (data.userID == -1 || data.data.isEmpty())
+    {
+        emit userErro();
+        return;
+    }
     this->userID = data.userID;
-    this->tocken = data.data;
+    this->tocken = QString::fromUtf8(data.data);
+    if (aes != nullptr)
+        delete aes;
+    aes = new BotanAES256(tocken);
     if(!this->listen(QHostAddress::Any,localBind))
     {
         emit listenState(false);
@@ -367,4 +381,19 @@ void TcpServer::handleUserLog(swapData &data)
     {
         emit listenState(true);
     }
+}
+
+bool TcpServer::decryptData(swapData & data)
+{
+    return true;//TODO:加密优化，现在没有加密传输
+    if (data.data.isEmpty()) return false;
+    data.data = aes->Decrypt(data.data);
+    if (data.data.isEmpty()) return false;
+    return true;
+}
+
+QByteArray TcpServer::encryptData(const QByteArray &data)
+{
+    return data;//TODO:加密优化，现在没有加密传输
+    return aes->Encrypt(data);
 }
