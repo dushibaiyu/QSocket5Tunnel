@@ -20,6 +20,7 @@ TcpServer::~TcpServer()
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须在此函数里捕获新连接
 {
+    //qDebug() << socketDescriptor << "   socketDescriptor";
     LocalSocket * tcpTemp = new LocalSocket(socketDescriptor,this);
     QString thisHost;
     qint16 thisPort;
@@ -37,7 +38,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
             QPair<QString,qint16> host(thisHost,thisPort);
             QDataStream stream(&buf,QIODevice::ReadWrite);
             stream << host;
-            qDebug() << thisHost << thisPort;
+            //qDebug() << thisHost << thisPort;
         }
         data.data = buf;
         buf.clear();
@@ -331,6 +332,7 @@ void TcpServer::handleDisCon(swapData &data)
 void TcpServer::handleSwapData(swapData &data)
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
+    //qDebug() << "//qDebug() << data.socketID;" << data.socketID << sock;
     if (sock != nullptr)
     {
         sock->write(data.data);

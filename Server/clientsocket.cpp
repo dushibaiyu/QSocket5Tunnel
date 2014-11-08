@@ -90,6 +90,7 @@ void ClientSocket::remoteData()
     RemoteSocket * sock = qobject_cast<RemoteSocket *>(QObject::sender());
     Q_ASSERT(sock);
     swapData data;
+    //qDebug() << "remoteData" << sock->getSocketID();
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
@@ -102,7 +103,7 @@ void ClientSocket::remoteData()
     qulonglong size = buf.size();
     QByteArray ba = QByteArray::number(size,16);
     while(ba.size() < 6)
-        ba.insert(0,static_cast<char>(0X00));
+        ba.insert(0,'0');
     ba += buf;
     this->write(ba);
 }
@@ -140,7 +141,7 @@ void ClientSocket::handleNewCon(swapData &data)
         QDataStream stream(&data.data,QIODevice::ReadWrite);
         stream >> host;
     }
-    qDebug() << host.first << host.second;
+    //qDebug() << host.first << host.second;
     if (host.first.isEmpty()) return;
     RemoteSocket * sock = new RemoteSocket(data.socketID,this);
     connect(sock,&RemoteSocket::readyRead,this,&ClientSocket::remoteData);
