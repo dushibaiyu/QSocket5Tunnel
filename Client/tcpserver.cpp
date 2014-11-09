@@ -4,7 +4,7 @@
 #include <QHostAddress>
 
 TcpServer::TcpServer(QObject *parent) :
-    QTcpServer(parent),lastsize(0),aes(nullptr)
+    QTcpServer(parent),lastsize(0)//,aes(nullptr)
 {
      tcpClient = new  QHash<int,LocalSocket *>;
      serverSocket = new QTcpSocket(this);
@@ -20,7 +20,6 @@ TcpServer::~TcpServer()
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须在此函数里捕获新连接
 {
-    //qDebug() << socketDescriptor << "   socketDescriptor";
     LocalSocket * tcpTemp = new LocalSocket(socketDescriptor,this);
     QString thisHost;
     qint16 thisPort;
@@ -29,30 +28,14 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
         initLocalProxy(thisHost,thisPort,tcpTemp);
         connect(tcpTemp,&LocalSocket::readyRead,this,&TcpServer::LocalSocketRead);
         connect(tcpTemp,&LocalSocket::disconnected,this,&TcpServer::localSockedDisCon);
-        swapData data;
         data.operater = 1;
         data.socketID = socketDescriptor;
         data.userID = this->userID;
-        QByteArray buf;
-        {
-            QPair<QString,qint16> host(thisHost,thisPort);
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << host;
-            //qDebug() << thisHost << thisPort;
-        }
-        data.data = encryptData(buf);
-        buf.clear();
-        {
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << data;
-        }
-        qlonglong ize = buf.size();
-        QByteArray ba = QByteArray::number(ize,16);
-        while(ba.size() < 6)
-            ba.insert(0,'0');
-        ba += buf;
-        serverSocket->write(ba);
-        tcpClient->insert(socketDescriptor,tcpTemp);
+        newHost = qMakePair(thisHost,thisPort);
+        if (!serializeData(bytearry,newHost)) return ;
+        data.data = bytearry;//encryptData(aes,bytearry);
+        if (sentServerData())
+            tcpClient->insert(socketDescriptor,tcpTemp);
     }
     else
     {
@@ -195,26 +178,12 @@ void TcpServer::socketConnect(const QString &user, const QString &pass)
     if (serverSocket->waitForConnected())
     {
         isSerCon = true;
-        swapData data;
         data.operater = 3;
-        QByteArray buf;
-        {
+
             QPair<QString,QString> host(user,pass);
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << host;
-        }
-        data.data = buf;
-        buf.clear();
-        {
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << data;
-        }
-        qlonglong ize = buf.size();
-        QByteArray ba = QByteArray::number(ize,16);
-        while(ba.size() < 6)
-            ba.insert(0,'0');
-        ba += buf;
-        serverSocket->write(ba);
+        if (!serializeData(bytearry,host)) return;
+        data.data = bytearry;
+        sentServerData();
     }
     else
     {
@@ -225,38 +194,33 @@ void TcpServer::socketConnect(const QString &user, const QString &pass)
 
 void TcpServer::serSocketRead()
 {
-    QByteArray ba;
     if (lastsize == 0)
     {
-        ba = serverSocket->read(6);
-        lastsize = ba.toLongLong(0,16);
+        basize = serverSocket->read(6);
+        lastsize = basize.toLongLong(0,16);
     }
     while (serverSocket->bytesAvailable() >= static_cast<qint64>(lastsize))
     {
-        swapData data;
-        ba = serverSocket->read(this->lastsize);
-        {
-            QDataStream stream(&ba,QIODevice::ReadWrite);
-            stream >> data;
-        }
+        bytearry = serverSocket->read(lastsize);
+        if(!deSerializeData(bytearry,data)) return;
         switch (data.operater)
         {
         case 0:
-            handleSwapData(data);
+            handleSwapData();
             break;
         case 2:
-            handleDisCon(data);
+            handleDisCon();
             break;
         case 3:
-            handleUserLog(data);
+            handleUserLog();
             break;
         default:
             break;
         }
         if (!serverSocket->atEnd() || serverSocket->bytesAvailable() > 6)
         {
-            ba = serverSocket->read(6);
-            lastsize = ba.toLongLong(0,16);
+            basize = serverSocket->read(6);
+            lastsize = basize.toLongLong(0,16);
         }
         else
         {
@@ -282,22 +246,11 @@ void TcpServer::LocalSocketRead()
 {
     LocalSocket * sock = qobject_cast<LocalSocket *>(QObject::sender());
     Q_ASSERT(sock);
-    swapData data;
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = encryptData(sock->readAll());
-    QByteArray  buf;
-    {
-        QDataStream stream(&buf,QIODevice::ReadWrite);
-        stream << data;
-    }
-    qulonglong size = buf.size();
-    QByteArray ba = QByteArray::number(size,16);
-    while(ba.size() < 6)
-        ba.insert(0,'0');
-    ba += buf;
-    serverSocket->write(ba);
+    data.data = sock->readAll();//encryptData(aes,sock->readAll());
+    sentServerData();
 }
 
 void TcpServer::localSockedDisCon()
@@ -306,62 +259,53 @@ void TcpServer::localSockedDisCon()
     Q_ASSERT(sock);
     if (tcpClient->contains(sock->getSocketID()))
     {
-        swapData data;
         data.operater = 2;
         data.socketID = sock->getSocketID();
         data.userID = this->userID;
-        QByteArray buf;
-        {
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << data;
-        }
-        qulonglong size = buf.size();
-        QByteArray ba = QByteArray::number(size,16);
-        while(ba.size() < 6)
-            ba.insert(0,'0');
-        ba += buf;
-        serverSocket->write(ba);
+        data.data.clear();
+        sentServerData();
         tcpClient->remove(sock->getSocketID());
     }
     delete sock;
 }
 
-void TcpServer::handleDisCon(swapData &data)
+void TcpServer::handleDisCon()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != nullptr)
+    if (sock != 0)
     {
         tcpClient->remove(data.socketID);
         sock->disconnectFromHost();
     }
 }
 
-void TcpServer::handleSwapData(swapData &data)
+void TcpServer::handleSwapData()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != nullptr && decryptData(data))
+    if (sock != nullptr )//&& decryptData(aes,data))
     {
         sock->write(data.data);
     }
     else
     {
-        data.operater = static_cast<char>(0X02);
+        data.operater = 2;
         data.data.clear();
-        QByteArray buf;
-        {
-            QDataStream stream(&buf,QIODevice::ReadWrite);
-            stream << data;
-        }
-        qulonglong size = buf.size();
-        QByteArray ba = QByteArray::number(size,16);
-        while(ba.size() < 6)
-            ba.insert(0,'0');
-        ba += buf;
-        serverSocket->write(ba);
+        sentServerData();
     }
 }
 
-void TcpServer::handleUserLog(swapData &data)
+inline bool TcpServer::sentServerData()
+{
+    if (!serializeData(bytearry,data)) return false;
+    qulonglong size = bytearry.size();
+    basize = QByteArray::number(size,16);
+    while(basize.size() < 6)
+        basize.insert(0,'0');
+    serverSocket->write(basize + bytearry);
+    return true;
+}
+
+void TcpServer::handleUserLog()
 {
     if (data.userID == -1 || data.data.isEmpty())
     {
@@ -370,9 +314,9 @@ void TcpServer::handleUserLog(swapData &data)
     }
     this->userID = data.userID;
     this->tocken = QString::fromUtf8(data.data);
-    if (aes != nullptr)
-        delete aes;
-    aes = new BotanAES256(tocken);
+//    if (aes != nullptr)
+//        delete aes;
+//    aes = new BotanAES256(tocken);
     if(!this->listen(QHostAddress::Any,localBind))
     {
         emit listenState(false);
@@ -383,17 +327,3 @@ void TcpServer::handleUserLog(swapData &data)
     }
 }
 
-bool TcpServer::decryptData(swapData & data)
-{
-    return true;//TODO:加密优化，现在没有加密传输
-    if (data.data.isEmpty()) return false;
-    data.data = aes->Decrypt(data.data);
-    if (data.data.isEmpty()) return false;
-    return true;
-}
-
-QByteArray TcpServer::encryptData(const QByteArray &data)
-{
-    return data;//TODO:加密优化，现在没有加密传输
-    return aes->Encrypt(data);
-}

@@ -5,7 +5,6 @@
 #include <QHash>
 #include "localsocket.h"
 #include "../common/datastruct.h"
-#include "../common/botanaes256.h"
 
 
 class TcpServer : public QTcpServer
@@ -33,12 +32,11 @@ protected:
     void incomingConnection(qintptr socketDescriptor);
     void initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);
 
-    void handleSwapData(swapData & data);
-    void handleUserLog(swapData & data);
-    void handleDisCon(swapData & data);
+    void handleSwapData();
+    void handleUserLog();
+    void handleDisCon();
 
-    inline bool decryptData(swapData & data);
-    inline QByteArray encryptData(const QByteArray & data);
+    inline bool sentServerData();
 private:
     QHash<int,LocalSocket *> * tcpClient;//管理连接的map
     qint32 userID = -1;//用户ID
@@ -49,7 +47,12 @@ private:
     qint16 serPort;
     qint16 localBind;
     qulonglong lastsize;
-    BotanAES256 * aes;
+//    BotanAES256 * aes;
+
+private://临时变量，放到类里，优化每次分配
+    swapData data;
+    QByteArray bytearry,basize;
+    QPair<QString , qint16> newHost;
 };
 
 #endif // TcpServer_H

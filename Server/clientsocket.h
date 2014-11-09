@@ -3,7 +3,6 @@
 
 #include "remotesocket.h"
 #include "../common/datastruct.h"
-#include "../common/botanaes256.h"
 #include <QHash>
 
 class ClientSocket : public QTcpSocket
@@ -24,20 +23,24 @@ protected slots:
     void remoteDisCon();
     void clientData();
 protected:
-    void handleSwapData(swapData & data);
-    void handleUserLog(swapData & data);
-    void handleNewCon(swapData & data);
-    void handleDisCon(swapData & data);
+    void handleSwapData();
+    void handleUserLog();
+    void handleNewCon();
+    void handleDisCon();
 
-    bool decryptData(swapData & data);
-    inline QByteArray encryptData(const QByteArray & data);
+    inline bool sentClientData();
+
+//    bool decryptClientData(swapData & data);
 private:
     qintptr socketID;
     QHash<int,RemoteSocket *> socketList;
     qint32 userID;
     QString token;
     qulonglong lastsize;
-    BotanAES256 * aes;
+private://临时变量，放到类里，优化每次分配
+    swapData data;
+    QByteArray bytearry,basize;
+    QPair<QString , qint16> newHost;
 };
 
 #endif // ClientSocket_H

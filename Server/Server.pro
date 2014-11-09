@@ -12,6 +12,8 @@ TARGET = Server
 CONFIG   += console
 CONFIG   -= app_bundle
 
+#DEFINES += USE_ENCRYPT #若要启用加密，就取消此宏注释
+
 TEMPLATE = app
 
 CONFIG += C++11
@@ -21,8 +23,7 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/threadhandle.cpp \
     $$PWD/clientsocket.cpp \
     $$PWD/../common/datastruct.cpp \
-    $$PWD/userconfig.cpp \
-    $$PWD/../common/botanaes256.cpp
+    $$PWD/userconfig.cpp
 
 HEADERS += \
     $$PWD/../common/datastruct.h \
@@ -30,7 +31,5 @@ HEADERS += \
     $$PWD/threadhandle.h \
     $$PWD/remotesocket.h \
     $$PWD/clientsocket.h \
-    $$PWD/userconfig.h \
-    $$PWD/../common/botanaes256.h
+    $$PWD/userconfig.h
 
-include($$PWD/../common/3rdparty/botan/botan.pri)
