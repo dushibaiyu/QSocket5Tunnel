@@ -6,12 +6,12 @@
   Author Ruslan Salikhov <ruslansalihov /at/ gmail.com>
 **/
 
-#include "qsimplecipher.h"
+#include "OpensslAES.h"
 
 #include <QByteArray>
 #include <QCryptographicHash>
 
-QSimpleCipher::QSimpleCipher(const QByteArray &key, const QByteArray &salt, Type type, Mode mode)
+OpensslAES::OpensslAES(const QByteArray &key, const QByteArray &salt, Type type, Mode mode)
     : m_isValid(false),
       m_type(type),
       m_mode(mode)
@@ -23,7 +23,7 @@ QSimpleCipher::QSimpleCipher(const QByteArray &key, const QByteArray &salt, Type
 }
 
 
-QSimpleCipher::~QSimpleCipher()
+OpensslAES::~OpensslAES()
 {
     EVP_CIPHER_CTX_cleanup(&m_encoder);
     EVP_CIPHER_CTX_cleanup(&m_decoder);
@@ -33,7 +33,7 @@ QSimpleCipher::~QSimpleCipher()
  * Create an 256 bit key and IV using the supplied key_data. salt can be added for taste.
  * Fills in the encryption and decryption ctx objects and returns 0 on success
  **/
-bool QSimpleCipher::init(const QByteArray &keyData,
+bool OpensslAES::init(const QByteArray &keyData,
                          const QByteArray &saltData)
 {
     int i, nrounds = 5;
@@ -71,7 +71,7 @@ bool QSimpleCipher::init(const QByteArray &keyData,
     return true;
 }
 
-const EVP_CIPHER *QSimpleCipher::getEvpCipher() const
+const EVP_CIPHER *OpensslAES::getEvpCipher() const
 {
     if (m_type == TypeAes128 && m_mode == ModeCbc)
     {
@@ -125,7 +125,7 @@ const EVP_CIPHER *QSimpleCipher::getEvpCipher() const
     return 0;
 }
 
-int QSimpleCipher::calcBlockSize() const
+int OpensslAES::calcBlockSize() const
 {
     switch (m_type)
     {
@@ -144,7 +144,7 @@ int QSimpleCipher::calcBlockSize() const
 /**
  * Encrypt data
  **/
-QByteArray QSimpleCipher::encrypt(const QByteArray &plainData)
+QByteArray OpensslAES::encrypt(const QByteArray &plainData)
 {
     if (!m_isValid)
         return QByteArray();
@@ -181,7 +181,7 @@ QByteArray QSimpleCipher::encrypt(const QByteArray &plainData)
 /**
  * Decrypt cipher data
  **/
-QByteArray QSimpleCipher::decrypt(const QByteArray &cipherData)
+QByteArray OpensslAES::decrypt(const QByteArray &cipherData)
 {
     if (!m_isValid)
         return QByteArray();
@@ -211,22 +211,22 @@ QByteArray QSimpleCipher::decrypt(const QByteArray &cipherData)
     return QByteArray((const char*)plaintext, p_len + f_len);
 }
 
-bool QSimpleCipher::isValid() const
+bool OpensslAES::isValid() const
 {
     return m_isValid;
 }
 
-QSimpleCipher::Type QSimpleCipher::type() const
+OpensslAES::Type OpensslAES::type() const
 {
     return m_type;
 }
 
-QSimpleCipher::Mode QSimpleCipher::mode() const
+OpensslAES::Mode OpensslAES::mode() const
 {
     return m_mode;
 }
 
-int QSimpleCipher::blockSize() const
+int OpensslAES::blockSize() const
 {
     return m_blockSize;
 }

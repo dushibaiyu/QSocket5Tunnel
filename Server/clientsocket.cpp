@@ -11,6 +11,7 @@ ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造
     connect(this,&ClientSocket::readyRead,this,&ClientSocket::clientData);
     connect(this,&ClientSocket::disconnected,
             [&](){
+                deleteSocket();
                 emit sockDisConnect(socketID,this->peerAddress().toString(),this->peerPort(),QThread::currentThread());//发送断开连接的用户信息
             });
 
@@ -39,6 +40,14 @@ void ClientSocket::disConTcp(int i)
     else if (i == -1) //-1为全部断开
     {
         this->disconnectFromHost();
+    }
+}
+
+void ClientSocket::deleteSocket()
+{
+    for (auto it  = socketList.begin(); it != socketList.end(); ++it)
+    {
+        delete it.value();
     }
 }
 
@@ -90,8 +99,7 @@ void ClientSocket::remoteData()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();//
-    encryptData(aes,data.data);
+    data.data = encryptData(aes,sock->readAll());
     sentClientData();
 }
 
@@ -138,7 +146,6 @@ void ClientSocket::handleSwapData()
     RemoteSocket * sock = socketList.value(data.socketID,nullptr);
     if (sock != nullptr && decryptClientData(data))
     {
-        qDebug() << data.data;
         sock->write(data.data);
     }
     else
@@ -177,7 +184,7 @@ void ClientSocket::handleUserLog()
             data.data = token.toUtf8();
             if (aes != nullptr)
                 delete aes;
-            aes = new AES_CRY(data.data);
+            aes = new OpensslAES(data.data);
         }
         else
         {
@@ -203,7 +210,7 @@ bool ClientSocket::decryptClientData(swapData &data)
         }
         if (aes != nullptr)
             delete aes;
-        aes = new AES_CRY(token.toUtf8());
+        aes = new OpensslAES(token.toUtf8());
     }
     return decryptData(aes,data.data);
 }

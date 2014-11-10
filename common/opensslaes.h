@@ -6,13 +6,13 @@
   Author Ruslan Salikhov <ruslansalihov /at/ gmail.com>
 **/
 
-#ifndef QSIMPLECIPHER_H
-#define QSIMPLECIPHER_H
+#ifndef OpensslAES_H
+#define OpensslAES_H
 
 #include <QByteArray>
 #include <openssl/evp.h>
 
-class QSimpleCipher
+class OpensslAES
 {
 public:
 
@@ -31,11 +31,11 @@ public:
         TypeAes256 = 2
     };
 
-    QSimpleCipher(const QByteArray &secretKey = "dushibaiyu",
+    OpensslAES(const QByteArray &secretKey = "dushibaiyu",
                   const QByteArray &salt = "www.dushibaiyu.com",
                   Type m_type = TypeAes256,
                   Mode m_mode = ModeCbc );
-    ~QSimpleCipher();
+    ~OpensslAES();
 
     QByteArray encrypt(const QByteArray &plainData);
 
@@ -69,4 +69,4 @@ private:
     EVP_CIPHER_CTX m_encoder, m_decoder;
 };
 
-#endif // QSIMPLECIPHER_H
+#endif // OpensslAES_H

@@ -19,23 +19,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     ../common/datastruct.cpp \
     tcpserver.cpp \
-    ../common/aes.cpp \
-    ../common/sshcryptofacility.cpp \
-    ../common/qsimplecipher.cpp
+    ../common/opensslaes.cpp
+
 
 HEADERS  += mainwindow.h \
     ../common/datastruct.h \
     tcpserver.h \
     localsocket.h \
-    ../common/aes.h \
-    ../common/sshbotanconversions_p.h \
-    ../common/sshcryptofacility_p.h \
-    ../common/qsimplecipher.h
+    ../common/opensslaes.h
 
 
 FORMS    += mainwindow.ui
 
-include (../common/3rdparty/botan/botan.pri)
 
 
 win32: LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32

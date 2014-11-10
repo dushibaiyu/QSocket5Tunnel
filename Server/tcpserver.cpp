@@ -6,7 +6,6 @@ TcpServer::TcpServer(QObject *parent) :
     QTcpServer(parent)
 {
      tcpClient = new  QMap<int,ClientSocket *>;
-     Botan::LibraryInitializer::initialize("thread_safe=true");
 }
 
 TcpServer::~TcpServer()

@@ -24,9 +24,7 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/clientsocket.cpp \
     $$PWD/../common/datastruct.cpp \
     $$PWD/userconfig.cpp \
-    $$PWD/../common/aes.cpp \
-    ../common/sshcryptofacility.cpp \
-    ../common/qsimplecipher.cpp
+    ../common/opensslaes.cpp
 
 HEADERS += \
     $$PWD/../common/datastruct.h \
@@ -35,12 +33,7 @@ HEADERS += \
     $$PWD/remotesocket.h \
     $$PWD/clientsocket.h \
     $$PWD/userconfig.h \
-    $$PWD/../common/aes.h \
-    ../common/sshbotanconversions_p.h \
-    ../common/sshcryptofacility_p.h \
-    ../common/qsimplecipher.h
-
-include (../common/3rdparty/botan/botan.pri)
+    ../common/opensslaes.h
 
 
 win32: LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32

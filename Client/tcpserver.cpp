@@ -11,7 +11,6 @@ TcpServer::TcpServer(QObject *parent) :
      isSerCon = false;
      connect(serverSocket,&QTcpSocket::readyRead,this,&TcpServer::serSocketRead);
      connect(serverSocket,&QTcpSocket::disconnected,this,&TcpServer::serSocketDisCon);
-     Botan::LibraryInitializer::initialize("thread_safe=true");
 }
 
 TcpServer::~TcpServer()
@@ -37,11 +36,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
         data.userID = this->userID;
         newHost = qMakePair(thisHost,thisPort);
         if (!serializeData(bytearry,newHost)) return ;
-//        data.data = bytearry;//
-        encryptData(aes,bytearry);
-        data.data = bytearry;
-        decryptData(aes,bytearry);
-        qDebug() << deSerializeData(bytearry,newHost);
+        data.data = encryptData(aes,bytearry);
         if (sentServerData())
             tcpClient->insert(socketDescriptor,tcpTemp);
     }
@@ -257,8 +252,7 @@ void TcpServer::LocalSocketRead()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();//
-    encryptData(aes,data.data);
+    data.data = encryptData(aes,sock->readAll());
     sentServerData();
 }
 
@@ -325,7 +319,7 @@ void TcpServer::handleUserLog()
     this->tocken = QString::fromUtf8(data.data);
     if (aes != nullptr)
         delete aes;
-    aes = new AES_CRY(data.data);
+    aes = new OpensslAES(data.data);
     if(!this->listen(QHostAddress::Any,localBind))
     {
         emit listenState(false);
