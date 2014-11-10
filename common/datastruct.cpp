@@ -17,3 +17,7 @@ BotanAES::BotanAES(const QByteArray & pass,const QByteArray & salt)
     encry.recreateKeys(pass,salt);
     decry.recreateKeys(pass,salt);
 }
+
+OpensslAES::OpensslAES(const QByteArray &pass, const QByteArray &salt):
+    aes(pass,salt)
+{}

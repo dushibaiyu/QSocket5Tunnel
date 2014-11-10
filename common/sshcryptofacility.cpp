@@ -63,7 +63,7 @@ void SshAbstractCryptoFacility::recreateKeys(const QByteArray &pass, const QByte
     if (m_sessionId.isEmpty())
         m_sessionId = pass;
     Algorithm_Factory &af = global_state().algorithm_factory();
-    Botan::HashFunction *hash = af.make_hash_function("SHA-1")->clone();
+    Botan::HashFunction *hash = af.make_hash_function("SHA-1");
     BlockCipher * const cipher = af.prototype_block_cipher("AES-128")->clone();
 
     m_cipherBlockSize = cipher->block_size();
@@ -97,6 +97,7 @@ bool SshAbstractCryptoFacility::convert(QByteArray &data,
     if (bytesRead != dataSize) {
        return false;
     }
+    return true;
 }
 
 void SshAbstractCryptoFacility::checkInvariant() const

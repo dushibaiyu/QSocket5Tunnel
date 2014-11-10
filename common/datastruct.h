@@ -5,9 +5,10 @@
 #include <QDebug>
 #include "aes.h"
 #include "sshcryptofacility_p.h"
+#include "qsimplecipher.h"
 
 #define DATASTREAM_VISION QDataStream::Qt_5_2
-#define AES_CRY BotanAES
+#define AES_CRY OpensslAES
 /****
  * operater : 值说明
  *          0 ：数据交换，就是socket5的数据转发
@@ -75,6 +76,23 @@ public:
 private:
     SshDecryptionFacility decry;
     SshEncryptionFacility encry;
+};
+
+class OpensslAES
+{
+public:
+    OpensslAES(const QByteArray & pass = "dushibaiyu",const QByteArray & salt = "www.dushibaiyu.com");
+
+    inline void dataDecrypt(QByteArray & data)
+    {
+        data = aes.decrypt(data);
+    }
+    inline void dataEncrypt(QByteArray & data)
+    {
+        data = aes.encrypt(data);
+    }
+private:
+    QSimpleCipher aes;
 };
 
 inline bool decryptData( AES_CRY * aes,QByteArray & data)

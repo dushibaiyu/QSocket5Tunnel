@@ -25,7 +25,8 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/../common/datastruct.cpp \
     $$PWD/userconfig.cpp \
     $$PWD/../common/aes.cpp \
-    ../common/sshcryptofacility.cpp
+    ../common/sshcryptofacility.cpp \
+    ../common/qsimplecipher.cpp
 
 HEADERS += \
     $$PWD/../common/datastruct.h \
@@ -36,6 +37,16 @@ HEADERS += \
     $$PWD/userconfig.h \
     $$PWD/../common/aes.h \
     ../common/sshbotanconversions_p.h \
-    ../common/sshcryptofacility_p.h
+    ../common/sshcryptofacility_p.h \
+    ../common/qsimplecipher.h
 
 include (../common/3rdparty/botan/botan.pri)
+
+
+win32: LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
+
+INCLUDEPATH += C:/OpenSSL-Win32/include
+DEPENDPATH += C:/OpenSSL-Win32/include
+
+win32:!win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/eay32.lib
+else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
