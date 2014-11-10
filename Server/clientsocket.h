@@ -30,13 +30,14 @@ protected:
 
     inline bool sentClientData();
 
-//    bool decryptClientData(swapData & data);
+    bool decryptClientData(swapData & data);
 private:
     qintptr socketID;
     QHash<int,RemoteSocket *> socketList;
     qint32 userID;
     QString token;
     qulonglong lastsize;
+    AES_CRY * aes;
 private://临时变量，放到类里，优化每次分配
     swapData data;
     QByteArray bytearry,basize;

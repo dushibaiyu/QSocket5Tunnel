@@ -4,7 +4,7 @@
 #include "userconfig.h"
 
 ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造函数在主线程执行，lambda在子线程
-    QTcpSocket(parent),socketID(socketDescriptor),userID(-1),lastsize(0)//,aes(nullptr)
+    QTcpSocket(parent),socketID(socketDescriptor),userID(-1),lastsize(0),aes(nullptr)
 {
     this->setSocketDescriptor(socketDescriptor);
 
@@ -18,8 +18,8 @@ ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造
 
 ClientSocket::~ClientSocket()
 {
-//    if (aes != nullptr)
-//        delete aes;
+    if (aes != nullptr)
+        delete aes;
 }
 
 void ClientSocket::sentData(const QByteArray &data, const int id)
@@ -90,7 +90,8 @@ void ClientSocket::remoteData()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();//encryptData(aes,sock->readAll());
+    data.data = sock->readAll();//
+    encryptData(aes,data.data);
     sentClientData();
 }
 
@@ -112,7 +113,7 @@ void ClientSocket::remoteDisCon()
 
 void ClientSocket::handleNewCon()
 {
-//    if (!decryptClientData(data)) return;
+    if (!decryptClientData(data)) return;
     if (!deSerializeData(data.data,newHost)) return;
     if (newHost.first.isEmpty()) return;
     RemoteSocket * sock = new RemoteSocket(data.socketID,this);
@@ -135,8 +136,9 @@ void ClientSocket::handleDisCon()
 void ClientSocket::handleSwapData()
 {
     RemoteSocket * sock = socketList.value(data.socketID,nullptr);
-    if (sock != nullptr )//&& decryptClientData(data))
+    if (sock != nullptr && decryptClientData(data))
     {
+        qDebug() << data.data;
         sock->write(data.data);
     }
     else
@@ -173,9 +175,9 @@ void ClientSocket::handleUserLog()
         {
             this->userID = data.userID;
             data.data = token.toUtf8();
-//            if (aes != nullptr)
-//                delete aes;
-//            aes = new BotanAES256(token);
+            if (aes != nullptr)
+                delete aes;
+            aes = new AES_CRY(data.data);
         }
         else
         {
@@ -185,23 +187,23 @@ void ClientSocket::handleUserLog()
     sentClientData();
 }
 
-//bool ClientSocket::decryptClientData(swapData &data)
-//{
-//    if (userID ==- 1)
-//    {
-//        if (data.userID <= 0)
-//        {
-//            return false;
-//        }
-//        token =UserConfig::getClass().getToken(data.userID);
-//        if (token.isEmpty())
-//        {
-//            userID = -1;
-//            return false;
-//        }
-//        if (aes != nullptr)
-//            delete aes;
-//        aes = new BotanAES256(token);
-//    }
-//    return decryptData(aes,data);
-//}
+bool ClientSocket::decryptClientData(swapData &data)
+{
+    if (userID ==- 1)
+    {
+        if (data.userID <= 0)
+        {
+            return false;
+        }
+        token =UserConfig::getClass().getToken(data.userID);
+        if (token.isEmpty())
+        {
+            userID = -1;
+            return false;
+        }
+        if (aes != nullptr)
+            delete aes;
+        aes = new AES_CRY(token.toUtf8());
+    }
+    return decryptData(aes,data.data);
+}

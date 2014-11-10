@@ -1,4 +1,4 @@
-#include "datastruct.h"
+﻿#include "datastruct.h"
 
 QDataStream & operator<< (QDataStream & out, swapData & data)
 {
@@ -10,4 +10,10 @@ QDataStream & operator >> (QDataStream & in, swapData & data)
 {
     in >> data.operater >> data.userID >> data.socketID >> data.data;
     return in;
+}
+
+BotanAES::BotanAES(const QByteArray & pass,const QByteArray & salt)
+{
+    encry.recreateKeys(pass,salt);
+    decry.recreateKeys(pass,salt);
 }

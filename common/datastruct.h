@@ -1,11 +1,13 @@
-#ifndef DATASTRUCT_H
+﻿#ifndef DATASTRUCT_H
 #define DATASTRUCT_H
 #include <QDataStream>
 #include <QByteArray>
 #include <QDebug>
-
+#include "aes.h"
+#include "sshcryptofacility_p.h"
 
 #define DATASTREAM_VISION QDataStream::Qt_5_2
+#define AES_CRY BotanAES
 /****
  * operater : 值说明
  *          0 ：数据交换，就是socket5的数据转发
@@ -57,23 +59,41 @@ inline bool deSerializeData(QByteArray & data, T & structed)
     }
 }
 
-//inline bool decryptData(BotanAES256 * aes,swapData & data)
-//{
-//#ifndef USE_ENCRYPT
-//    return true;
-//#endif
-//    if (data.data.isEmpty()) return false;
-//    data.data = aes->Decrypt(data.data);
-//    if (data.data.isEmpty()) return false;
-//    return true;
-//}
+class BotanAES
+{
+public:
+    BotanAES(const QByteArray & pass = "dushibaiyu",const QByteArray & salt = "www.dushibaiyu.com");
 
-//inline QByteArray encryptData(BotanAES256 * aes,const QByteArray &data)
-//{
-//#ifndef USE_ENCRYPT
-//    return data;
-//#endif
-//    return aes->Encrypt(data);
-//}
+    inline void dataDecrypt(QByteArray & data)
+    {
+        decry.decrypt(data);
+    }
+    inline void dataEncrypt(QByteArray & data)
+    {
+        encry.encrypt(data);
+    }
+private:
+    SshDecryptionFacility decry;
+    SshEncryptionFacility encry;
+};
+
+inline bool decryptData( AES_CRY * aes,QByteArray & data)
+{
+#ifndef USE_ENCRYPT
+    return true;
+#endif
+    if (data.isEmpty()) return false;
+    aes->dataDecrypt(data);
+    return true;
+}
+
+inline void encryptData( AES_CRY * aes,QByteArray &data)
+{
+    if (data.isEmpty()) return;
+#ifndef USE_ENCRYPT
+    return ;
+#endif
+    aes->dataEncrypt(data);
+}
 
 #endif // DATASTRUCT_H

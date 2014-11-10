@@ -47,7 +47,7 @@ private:
     qint16 serPort;
     qint16 localBind;
     qulonglong lastsize;
-//    BotanAES256 * aes;
+    AES_CRY * aes;
 
 private://临时变量，放到类里，优化每次分配
     swapData data;

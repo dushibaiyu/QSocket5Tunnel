@@ -4,18 +4,22 @@
 #include <QHostAddress>
 
 TcpServer::TcpServer(QObject *parent) :
-    QTcpServer(parent),lastsize(0)//,aes(nullptr)
+    QTcpServer(parent),lastsize(0),aes(nullptr)
 {
      tcpClient = new  QHash<int,LocalSocket *>;
      serverSocket = new QTcpSocket(this);
      isSerCon = false;
      connect(serverSocket,&QTcpSocket::readyRead,this,&TcpServer::serSocketRead);
      connect(serverSocket,&QTcpSocket::disconnected,this,&TcpServer::serSocketDisCon);
+     Botan::LibraryInitializer::initialize("thread_safe=true");
 }
 
 TcpServer::~TcpServer()
 {
     delete tcpClient;
+    if (aes != nullptr)
+        delete aes;
+
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须在此函数里捕获新连接
@@ -33,7 +37,11 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
         data.userID = this->userID;
         newHost = qMakePair(thisHost,thisPort);
         if (!serializeData(bytearry,newHost)) return ;
-        data.data = bytearry;//encryptData(aes,bytearry);
+//        data.data = bytearry;//
+        encryptData(aes,bytearry);
+        data.data = bytearry;
+        decryptData(aes,bytearry);
+        qDebug() << deSerializeData(bytearry,newHost);
         if (sentServerData())
             tcpClient->insert(socketDescriptor,tcpTemp);
     }
@@ -249,7 +257,8 @@ void TcpServer::LocalSocketRead()
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
-    data.data = sock->readAll();//encryptData(aes,sock->readAll());
+    data.data = sock->readAll();//
+    encryptData(aes,data.data);
     sentServerData();
 }
 
@@ -272,7 +281,7 @@ void TcpServer::localSockedDisCon()
 void TcpServer::handleDisCon()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != 0)
+    if (sock != nullptr)
     {
         tcpClient->remove(data.socketID);
         sock->disconnectFromHost();
@@ -282,7 +291,7 @@ void TcpServer::handleDisCon()
 void TcpServer::handleSwapData()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != nullptr )//&& decryptData(aes,data))
+    if (sock != nullptr && decryptData(aes,data.data))
     {
         sock->write(data.data);
     }
@@ -314,9 +323,9 @@ void TcpServer::handleUserLog()
     }
     this->userID = data.userID;
     this->tocken = QString::fromUtf8(data.data);
-//    if (aes != nullptr)
-//        delete aes;
-//    aes = new BotanAES256(tocken);
+    if (aes != nullptr)
+        delete aes;
+    aes = new AES_CRY(data.data);
     if(!this->listen(QHostAddress::Any,localBind))
     {
         emit listenState(false);
