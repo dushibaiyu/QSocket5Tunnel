@@ -18,6 +18,7 @@ public slots:
     void sentData(const QByteArray & ,const int);//发送信号的槽
     void disConTcp(int i);
 
+    void deleteThis();
 protected slots:
     void remoteData();
     void remoteDisCon();
@@ -31,8 +32,6 @@ protected:
     inline bool sentClientData();
 
     bool decryptClientData(swapData & data);
-
-    void deleteSocket();
 private:
     qintptr socketID;
     QHash<int,RemoteSocket *> socketList;

@@ -237,11 +237,6 @@ void TcpServer::serSocketDisCon()
 {
     isSerCon = false;
     lastsize = 0;
-    for (auto it = tcpClient->begin(); it != tcpClient->end(); ++it)
-    {
-        it.value()->disconnectFromHost();
-        delete it.value();
-    }
     tcpClient->clear();
 }
 
@@ -269,7 +264,7 @@ void TcpServer::localSockedDisCon()
         sentServerData();
         tcpClient->remove(sock->getSocketID());
     }
-    delete sock;
+    sock->deleteLater();
 }
 
 void TcpServer::handleDisCon()
@@ -278,7 +273,10 @@ void TcpServer::handleDisCon()
     if (sock != nullptr)
     {
         tcpClient->remove(data.socketID);
-        sock->disconnectFromHost();
+        if (sock->state() == QTcpSocket::ConnectedState)
+            sock->disconnectFromHost();
+        else
+            sock->deleteLater();
     }
 }
 

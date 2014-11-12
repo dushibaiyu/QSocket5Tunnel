@@ -11,8 +11,8 @@ ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造
     connect(this,&ClientSocket::readyRead,this,&ClientSocket::clientData);
     connect(this,&ClientSocket::disconnected,
             [&](){
-                deleteSocket();
                 emit sockDisConnect(socketID,this->peerAddress().toString(),this->peerPort(),QThread::currentThread());//发送断开连接的用户信息
+                this->deleteLater();
             });
 
 }
@@ -40,14 +40,6 @@ void ClientSocket::disConTcp(int i)
     else if (i == -1) //-1为全部断开
     {
         this->disconnectFromHost();
-    }
-}
-
-void ClientSocket::deleteSocket()
-{
-    for (auto it  = socketList.begin(); it != socketList.end(); ++it)
-    {
-        delete it.value();
     }
 }
 
@@ -109,14 +101,14 @@ void ClientSocket::remoteDisCon()
     Q_ASSERT(sock);
     if (socketList.contains(sock->getSocketID()))
     {
+        socketList.remove(sock->getSocketID());
         data.operater = 2;
         data.socketID = sock->getSocketID();
         data.userID = this->userID;
         data.data.clear();
         sentClientData();
-        socketList.remove(sock->getSocketID());
     }
-    delete sock;
+    sock->deleteLater();
 }
 
 void ClientSocket::handleNewCon()
@@ -137,7 +129,10 @@ void ClientSocket::handleDisCon()
     if (sock != nullptr)
     {
         socketList.remove(data.socketID);
-        sock->disconnectFromHost();
+        if(sock->state() == QTcpSocket::ConnectedState)
+            sock->disconnectFromHost();
+        else
+            sock->deleteLater();
     }
 }
 
@@ -213,4 +208,9 @@ bool ClientSocket::decryptClientData(swapData &data)
         aes = new OpensslAES(token.toUtf8());
     }
     return decryptData(aes,data.data);
+}
+
+void ClientSocket::deleteThis()
+{
+    this->~ClientSocket();
 }
