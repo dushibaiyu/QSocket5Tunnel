@@ -203,28 +203,31 @@ void TcpServer::serSocketRead()
 {
     if (lastsize == 0)
     {
+        if (serverSocket->bytesAvailable() < 6) return;
         basize = serverSocket->read(6);
         lastsize = basize.toLongLong(0,16);
     }
     while (serverSocket->bytesAvailable() >= static_cast<qint64>(lastsize))
     {
         bytearry = serverSocket->read(lastsize);
-        if(!deSerializeData(bytearry,data)) return;
-        switch (data.operater)
+        if(deSerializeData(bytearry,data))
         {
-        case 0:
-            handleSwapData();
-            break;
-        case 2:
-            handleDisCon();
-            break;
-        case 3:
-            handleUserLog();
-            break;
-        default:
-            break;
+            switch (data.operater)
+            {
+            case 0:
+                handleSwapData();
+                break;
+            case 2:
+                handleDisCon();
+                break;
+            case 3:
+                handleUserLog();
+                break;
+            default:
+                break;
+            }
         }
-        if (!serverSocket->atEnd() || serverSocket->bytesAvailable() > 6)
+        if (!serverSocket->atEnd() && serverSocket->bytesAvailable() > 6)
         {
             basize = serverSocket->read(6);
             lastsize = basize.toLongLong(0,16);

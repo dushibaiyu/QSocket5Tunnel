@@ -11,9 +11,9 @@ ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造
     connect(this,&ClientSocket::readyRead,this,&ClientSocket::clientData);
     connect(this,&ClientSocket::disconnected,
             [&](){
-                emit sockDisConnect(socketID,this->peerAddress().toString(),this->peerPort(),QThread::currentThread());//发送断开连接的用户信息
-                this->deleteLater();
-            });
+        emit sockDisConnect(socketID,this->peerAddress().toString(),this->peerPort(),QThread::currentThread());//发送断开连接的用户信息
+        this->deleteLater();
+    });
 
 }
 
@@ -47,31 +47,34 @@ void ClientSocket::clientData()
 {
     if (lastsize == 0)
     {
+        if (this->bytesAvailable() < 6) return;
         basize = this->read(6);
         lastsize = basize.toLongLong(0,16);
     }
     while (this->bytesAvailable() >= static_cast<qint64>(lastsize))
     {
-        bytearry = this->read(this->lastsize);
-        if (!deSerializeData(bytearry,data)) return;
-        switch (data.operater)
+        bytearry = this->read(lastsize);
+        if(deSerializeData(bytearry,data))
         {
-        case 0:
-            handleSwapData();
-            break;
-        case 1:
-            handleNewCon();
-            break;
-        case 2:
-            handleDisCon();
-            break;
-        case 3:
-            handleUserLog();
-            break;
-        default:
-            break;
+            switch (data.operater)
+            {
+            case 0:
+                handleSwapData();
+                break;
+            case 1:
+                handleNewCon();
+                break;
+            case 2:
+                handleDisCon();
+                break;
+            case 3:
+                handleUserLog();
+                break;
+            default:
+                break;
+            }
         }
-        if (!this->atEnd() || this->bytesAvailable() > 6)
+        if (!this->atEnd() && this->bytesAvailable() > 6)
         {
             basize = this->read(6);
             lastsize = basize.toLongLong(0,16);
