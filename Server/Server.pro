@@ -36,10 +36,13 @@ HEADERS += \
     ../common/opensslaes.h
 
 
-win32: LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
+win32:LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
 
-INCLUDEPATH += C:/OpenSSL-Win32/include
-DEPENDPATH += C:/OpenSSL-Win32/include
+win32:INCLUDEPATH += C:/OpenSSL-Win32/include
+win32:DEPENDPATH += C:/OpenSSL-Win32/include
 
 win32:!win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/eay32.lib
 else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
+
+
+include(3rdparty/libev_eventdispatcher.pri)
