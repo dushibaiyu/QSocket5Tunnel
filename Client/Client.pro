@@ -33,10 +33,24 @@ FORMS    += mainwindow.ui
 
 
 
-win32: LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
+win32:
+{
+win32-g++:{
+  LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
+    PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
+}
+}
 
 INCLUDEPATH += C:/OpenSSL-Win32/include
 DEPENDPATH += C:/OpenSSL-Win32/include
 
-win32:!win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/eay32.lib
-else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
+
+
+#win32:CONFIG(release, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/static/ -llibeay32MT
+#else:win32:CONFIG(debug, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/static/ -llibeay32MTd
+
+
+#win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/VC/static/liblibeay32MT.a
+#else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/VC/static/liblibeay32MTd.a
+#else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/VC/static/libeay32MT.lib
+#else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/VC/static/libeay32MTd.lib

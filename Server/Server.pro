@@ -44,5 +44,6 @@ win32:DEPENDPATH += C:/OpenSSL-Win32/include
 win32:!win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/eay32.lib
 else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
 
+unix:LIBS += -lcrypto
 
-include(3rdparty/libev_eventdispatcher.pri)
+#include(3rdparty/libev_eventdispatcher.pri)

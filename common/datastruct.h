@@ -16,10 +16,11 @@
 
 struct swapData
 {
-    qint8 operater = 8;//操作
-    qint32 userID = -1;//用户ID
-    qint32 socketID = -1;//socket链接的ID
+    qint8 operater;// = 8;//操作
+    qint32 userID;// = -1;//用户ID
+    qint32 socketID;// = -1;//socket链接的ID
     QByteArray data;//交换的数据
+    swapData(): operater(8),userID(-1),socketID(-1){}
 };
 
 QDataStream & operator<< (QDataStream & out, swapData & data);
@@ -52,7 +53,7 @@ inline bool deSerializeData(QByteArray & data, T & structed)
         return true;
     else
     {
-        qDebug() << "数据序列化错误。";
+        qDebug() << "数据反序列化错误。";
         return false;
     }
 }

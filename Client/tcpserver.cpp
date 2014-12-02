@@ -1,10 +1,14 @@
-﻿#include "tcpserver.h"
+﻿#ifdef _MSC_VER
+#pragma execution_character_set("utf-8")
+#endif
+
+#include "tcpserver.h"
 #include <QPair>
 #include <QtEndian>
 #include <QHostAddress>
 
 TcpServer::TcpServer(QObject *parent) :
-    QTcpServer(parent),lastsize(0),aes(nullptr)
+    QTcpServer(parent),userID(-1),lastsize(0),aes(nullptr)
 {
      tcpClient = new  QHash<int,LocalSocket *>;
      serverSocket = new QTcpSocket(this);

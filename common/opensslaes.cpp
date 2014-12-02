@@ -5,8 +5,11 @@
 
   Author Ruslan Salikhov <ruslansalihov /at/ gmail.com>
 **/
+#ifdef _MSC_VER
+#pragma execution_character_set("utf-8")
+#endif
 
-#include "OpensslAES.h"
+#include "opensslaes.h"
 
 #include <QByteArray>
 #include <QCryptographicHash>

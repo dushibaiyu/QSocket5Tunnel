@@ -39,7 +39,7 @@ protected:
     inline bool sentServerData();
 private:
     QHash<int,LocalSocket *> * tcpClient;//管理连接的map
-    qint32 userID = -1;//用户ID
+    qint32 userID;// = -1;//用户ID
     QString tocken;
     QTcpSocket * serverSocket;
     bool isSerCon;

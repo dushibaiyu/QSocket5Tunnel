@@ -1,3 +1,7 @@
+﻿#ifdef _MSC_VER
+#pragma execution_character_set("utf-8")
+#endif
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
