@@ -24,7 +24,7 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/clientsocket.cpp \
     $$PWD/../common/datastruct.cpp \
     $$PWD/userconfig.cpp \
-    ../common/opensslaes.cpp
+    $$PWD/../common/opensslaes.cpp
 
 HEADERS += \
     $$PWD/../common/datastruct.h \
@@ -33,7 +33,7 @@ HEADERS += \
     $$PWD/remotesocket.h \
     $$PWD/clientsocket.h \
     $$PWD/userconfig.h \
-    ../common/opensslaes.h
+    $$PWD/../common/opensslaes.h
 
 
 win32:LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32

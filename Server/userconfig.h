@@ -1,10 +1,18 @@
-#ifndef USERCONFIG_H
+﻿#ifndef USERCONFIG_H
 #define USERCONFIG_H
 
 //#include <QMutex>
 #include <QHash>
 #include <QPair>
 #include <QString>
+
+/*
+ * UserConfig格式：
+ * 一行一个用户，
+ * 每行的格式：
+ * username;password;id(int);
+ * 用户名和密码中不能出现分号(;)
+*/
 
 class UserConfig
 {
@@ -23,6 +31,7 @@ class SysConfig
 {
 public :
     SysConfig();
+    void saveConfig();
     int getBindPort() const
     {return port;}
     bool getThreadType() const
@@ -32,6 +41,6 @@ public :
 private:
     int port;
     int size;
-    bool type;
+    bool type;//true:固定每个链接处理几个，false：固定线程数
 };
 #endif // USERCONFIG_H

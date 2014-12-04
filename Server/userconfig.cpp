@@ -1,4 +1,4 @@
-#include "userconfig.h"
+﻿#include "userconfig.h"
 #include <QFile>
 #include <QSettings>
 #include <QTextStream>
@@ -59,6 +59,7 @@ SysConfig::SysConfig()
 {
     QSettings seting("SysConfig",QSettings::IniFormat);
     port = seting.value("bindPort",8888).toInt();
-    type = seting.value("ThreadType",true).toBool();
+    type = seting.value("ThreadType",false).toBool();
     size = seting.value("ThreadMax",100).toInt();
 }
+

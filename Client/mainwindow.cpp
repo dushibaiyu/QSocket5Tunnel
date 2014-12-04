@@ -50,6 +50,7 @@ void MainWindow::connectSlots()
     });
     connect(ser,&TcpServer::notToServer,[&](){
         QMessageBox::warning(this,tr("网络错误"),tr("无法链接到服务器，请检查您的配置！"));
+        this->ui->stackedWidget->setCurrentIndex(0);
         this->ui->butLogin->setEnabled(true);
         trayIcon->setIcon(QIcon(":/ico/un"));
         trayIcon->setToolTip(tr("未连接到服务器！"));

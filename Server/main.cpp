@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include "tcpserver.h"
 #include "threadhandle.h"
 #include "userconfig.h"
