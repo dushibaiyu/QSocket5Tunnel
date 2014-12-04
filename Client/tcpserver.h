@@ -4,7 +4,7 @@
 #include <QTcpServer>
 #include <QHash>
 #include "localsocket.h"
-#include "../common/datastruct.h"
+#include "configclass.h"
 
 
 class TcpServer : public QTcpServer
@@ -19,8 +19,7 @@ signals:
     void listenState(bool);
 
 public slots:
-    void setInfo(const QString &serHost,qint16 serPort,qint16 localBind);
-    void socketConnect(const QString & user,const QString & pass);
+    void socketConnect();
 
     void serSocketRead();
     void serSocketDisCon();
@@ -30,7 +29,7 @@ public slots:
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
-    void initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);
+    void initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);//socket5代理协议
 
     void handleSwapData();
     void handleUserLog();
@@ -43,9 +42,6 @@ private:
     QString tocken;
     QTcpSocket * serverSocket;
     bool isSerCon;
-    QString serHost;
-    qint16 serPort;
-    qint16 localBind;
     qulonglong lastsize;
     OpensslAES * aes;
 

@@ -26,7 +26,7 @@ TcpServer::~TcpServer()
 
 }
 
-void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须在此函数里捕获新连接
+void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
     LocalSocket * tcpTemp = new LocalSocket(socketDescriptor,this);
     QString thisHost;
@@ -52,7 +52,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
     {
         tcpTemp->close();
         tcpTemp->deleteLater();
-        serverSocket->connectToHost(serHost,serPort);
+        serverSocket->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
         if (serverSocket->waitForConnected())
         {
             isSerCon = true;
@@ -176,22 +176,15 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
     sock->write(response); // notify success and proceed with remote connection
 }
 
-void TcpServer::setInfo(const QString &serHost, qint16 serPort, qint16 localBind)
+void TcpServer::socketConnect()
 {
-    this->serHost = serHost;
-    this->serPort = serPort;
-    this->localBind = localBind;
-}
-
-void TcpServer::socketConnect(const QString &user, const QString &pass)
-{
-    serverSocket->connectToHost(serHost,serPort);
+    serverSocket->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
     if (serverSocket->waitForConnected())
     {
         isSerCon = true;
         data.operater = 3;
 
-            QPair<QString,QString> host(user,pass);
+            QPair<QString,QString> host(ConfigClass::getClass().user,ConfigClass::getClass().password);
         if (!serializeData(bytearry,host)) return;
         data.data = bytearry;
         sentServerData();
@@ -334,7 +327,7 @@ void TcpServer::handleUserLog()
     if (aes != nullptr)
         delete aes;
     aes = new OpensslAES(data.data);
-    if(!this->listen(QHostAddress::Any,localBind))
+    if(!this->listen(QHostAddress::Any,ConfigClass::getClass().localPort))
     {
         emit listenState(false);
     }

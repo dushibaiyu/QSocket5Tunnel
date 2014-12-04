@@ -4,7 +4,6 @@
 #include "tcpserver.h"
 #include <QMainWindow>
 
-
 namespace Ui {
 class MainWindow;
 }
@@ -20,6 +19,10 @@ public:
 
 protected slots:
     void on_butLogin_clicked();
+
+protected:
+    void connectSlots();
+    void initUI();
 private:
     Ui::MainWindow *ui;
     TcpServer * ser;
