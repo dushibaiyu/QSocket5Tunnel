@@ -8,7 +8,7 @@ QT       += core network
 
 QT       -= gui
 
-TARGET = Server
+TARGET = QS5ServerTunnel
 CONFIG   += console
 CONFIG   -= app_bundle
 

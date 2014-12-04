@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Client
+TARGET = QS5ClientTunnel
 TEMPLATE = app
 
 DEFINES += USE_ENCRYPT #若要启用加密，就取消此宏注释
