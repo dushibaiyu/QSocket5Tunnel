@@ -6,6 +6,7 @@
 #include <QPair>
 #include <QtEndian>
 #include <QHostAddress>
+#include <QTime>
 
 TcpServer::TcpServer(QObject *parent) :
     QTcpServer(parent),userID(-1),lastsize(0),aes(nullptr)
@@ -32,7 +33,10 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
     qint16 thisPort;
     if (isSerCon)
     {
+//        QTime tm;
+//        tm.start();
         initLocalProxy(thisHost,thisPort,tcpTemp);
+//        qDebug() << "initLocalProxy" << tm.elapsed();
         connect(tcpTemp,&LocalSocket::readyRead,this,&TcpServer::LocalSocketRead);
         connect(tcpTemp,&LocalSocket::disconnected,this,&TcpServer::localSockedDisCon);
         data.operater = 1;
@@ -201,6 +205,8 @@ void TcpServer::socketConnect(const QString &user, const QString &pass)
 
 void TcpServer::serSocketRead()
 {
+//    QTime tm;
+//    tm.start();
     if (lastsize == 0)
     {
         if (serverSocket->bytesAvailable() < 6) return;
@@ -235,9 +241,11 @@ void TcpServer::serSocketRead()
         else
         {
             lastsize = 0 ;
+//            qDebug() << "lastsize = 0 " << tm.elapsed();
             return ;
         }
     }
+//    qDebug() << "serSocketRead " << tm.elapsed() << " " << lastsize;
 }
 
 void TcpServer::serSocketDisCon()
@@ -245,6 +253,7 @@ void TcpServer::serSocketDisCon()
     isSerCon = false;
     lastsize = 0;
     tcpClient->clear();
+    emit notToServer();
 }
 
 void TcpServer::LocalSocketRead()

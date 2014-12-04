@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/ico">
+        <file alias="ed">rc/connecd.ico</file>
+        <file alias="un">rc/unconnecd.ico</file>
+    </qresource>
+</RCC>

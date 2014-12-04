@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="rc.qrc">
+    <normaloff>:/ico/ed</normaloff>:/ico/ed</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -225,8 +229,8 @@
        <widget class="QPushButton" name="butHidde">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>190</y>
+          <x>130</x>
+          <y>180</y>
           <width>191</width>
           <height>41</height>
          </rect>
@@ -236,13 +240,14 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="pageSett"/>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="rc.qrc"/>
+ </resources>
  <connections/>
 </ui>
