@@ -3,7 +3,6 @@
 
 #include <QTcpServer>
 #include <QHash>
-#include "localsocket.h"
 #include "configclass.h"
 
 

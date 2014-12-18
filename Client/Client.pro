@@ -21,16 +21,17 @@ SOURCES += \
         $$PWD/../common/datastruct.cpp \
         $$PWD/tcpserver.cpp \
         $$PWD/../common/opensslaes.cpp \
-        $$PWD/configclass.cpp
+        $$PWD/configclass.cpp \
+        $$PWD/../common/conversation.cpp
 
 
 HEADERS  += \
         $$PWD/mainwindow.h \
         $$PWD/../common/datastruct.h \
         $$PWD/tcpserver.h \
-        $$PWD/localsocket.h \
         $$PWD/../common/opensslaes.h \
-        $$PWD/configclass.h
+        $$PWD/configclass.h \
+        $$PWD/../common/conversation.h
 
 
 FORMS    += $$PWD/mainwindow.ui
