@@ -28,7 +28,6 @@ public slots:
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
-    void initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);//socket5代理协议
 
     void handleSwapData();
     void handleUserLog();

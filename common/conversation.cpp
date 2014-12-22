@@ -1,4 +1,6 @@
 ﻿#include "conversation.h"
+#include "opensslaes.h"
+#include "../common/datastruct.h"
 #include <QTcpSocket>
 
 Conversation::Conversation(OpensslAES *aes, QObject *parent) :
@@ -7,22 +9,22 @@ Conversation::Conversation(OpensslAES *aes, QObject *parent) :
 
 bool Conversation::setDescriptor(qint16 socket)
 {
-    if (local == nullptr) {
-        local = new QTcpSocket(this);
+    if (socket2 == nullptr) {
+        socket2 = new QTcpSocket(this);
     } else {
-        if (local->state() == QTcpSocket::connected())
-            local->disconnectFromHost();
-        disconnect(local, &QTcpSocket::readyRead, this, &Conversation::localRead);
-        disconnect(local, &QTcpSocket::disconnected, this, &Conversation::localClosed);
+        if (socket2->state() == QTcpSocket::connected())
+            socket2->disconnectFromHost();
+        disconnect(socket2, &QTcpSocket::readyRead, this, &Conversation::socket2Read);
+        disconnect(socket2, &QTcpSocket::disconnected, this, &Conversation::socket2Closed);
     }
 
-    if (remote == nullptr) {
-        remote = new QTcpSocket(this);
+    if (socket1 == nullptr) {
+        socket1 = new QTcpSocket(this);
     } else {
-        if (remote->state() == QTcpSocket::connected())
-            remote->disconnectFromHost();
-        disconnect(remote, &QTcpSocket::readyRead, this, &Conversation::remoteRead);
-        disconnect(remote, &QTcpSocket::disconnected, this, &Conversation::remoteClosed);
+        if (socket1->state() == QTcpSocket::connected())
+            socket1->disconnectFromHost();
+        disconnect(socket1, &QTcpSocket::readyRead, this, &Conversation::socket1Read);
+        disconnect(socket1, &QTcpSocket::disconnected, this, &Conversation::socket1Closed);
     }
 
     if (initLocalSocket(socket)) {
@@ -34,39 +36,46 @@ bool Conversation::setDescriptor(qint16 socket)
 
 void Conversation::connectSockets()
 {
-    connect(remote, &QTcpSocket::readyRead, this, &Conversation::remoteRead);
-    connect(remote, &QTcpSocket::disconnected, this, &Conversation::remoteClosed);
-    connect(local, &QTcpSocket::readyRead, this, &Conversation::localRead);
-    connect(local, &QTcpSocket::disconnected, this, &Conversation::localClosed);
-    localRead();
-    remoteRead();
+    connect(socket1, &QTcpSocket::readyRead, this, &Conversation::socket1Read);
+    connect(socket1, &QTcpSocket::disconnected, this, &Conversation::socket1Closed);
+    connect(socket2, &QTcpSocket::readyRead, this, &Conversation::socket2Read);
+    connect(socket2, &QTcpSocket::disconnected, this, &Conversation::socket2Closed);
+    socket2Read();
+    socket1Read();
 }
 
-void Conversation::remoteRead()
+void Conversation::socket1Read()
 {
-    if (remote->bytesAvailable() > 0)
-        local->write(remote->readAll());
+    if (socket1->bytesAvailable() > 0) {
+        //加密后传给socket2
+        QByteArray data = socket1->readAll();
+        socket2->write(encryptData(aes,data));
+    }
 }
 
-void Conversation::localRead()
+void Conversation::socket2Read()
 {
-    if (local->bytesAvailable() > 0)
-        remote->write(local->readAll());
+    if (socket2->bytesAvailable() > 0) {
+        //解密后传给socket1
+        QByteArray data = socket2->readAll();
+        if (decryptData(aes,data))
+            socket1->write(data);
+    }
 }
 
-void Conversation::remoteClosed()
+void Conversation::socket2Closed()
 {
-    if(local->state() != QTcpSocket::connected())
+    if(socket1->state() != QTcpSocket::connected())
         emit connectionClosed(this);
     else
-        local->disconnectFromHost();
+        socket1->disconnectFromHost();
 
 }
 
-void Conversation::localClosed() {
-    if(remote->state() != QTcpSocket::connected())
+void Conversation::socket1Closed() {
+    if(socket2->state() != QTcpSocket::connected())
         emit connectionClosed(this);
     else
-        remote->disconnectFromHost();
+        socket2->disconnectFromHost();
 }
 

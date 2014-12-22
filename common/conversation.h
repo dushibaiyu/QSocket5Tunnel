@@ -15,18 +15,17 @@ public:
 signals:
     void connectionClosed(Conversation * conv);
 protected:
-    void setRemoteSocket(QTcpSocket*);
-    void setLocalSocket(QTcpSocket*);
     void connectSockets();
     virtual bool initConSocket(qint16 socket) = 0;
 protected slots:
-    void remoteRead();
-    void localRead();
-    void remoteClosed();
-    void localClosed();
-private:
+    void socket1Read();
+    void socket2Read();
+    void socket1Closed();
+    void socket2Closed();
+protected:
     QTcpSocket * socket1;
-    QTcpSocket * socket2;
+    QTcpSocket * socket2;//这个是链接加密端数据的，所以客户端和服务端用的地方不一样
+private:
     OpensslAES * aes;
 };
 
