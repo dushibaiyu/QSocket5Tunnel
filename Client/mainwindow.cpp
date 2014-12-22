@@ -27,8 +27,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_butLogin_clicked()
 {
-    if (this->ui->lineServer->text().isEmpty() || this->ui->lineUser->text().isEmpty() || this->ui->linepword->text().isEmpty())
-    {
+    if (this->ui->lineServer->text().isEmpty() || this->ui->lineUser->text().isEmpty()
+            || this->ui->linepword->text().isEmpty()) {
         QMessageBox::warning(this,tr("信息不全"),tr("请先完善必须信息！"));
         return;
     }
@@ -56,14 +56,11 @@ void MainWindow::connectSlots()
         trayIcon->setToolTip(tr("未连接到服务器！"));
     });
     connect(ser,&TcpServer::listenState,[&](bool lis){
-        if (lis)
-        {
+        if (lis) {
             this->ui->stackedWidget->setCurrentIndex(1);
             trayIcon->setIcon(QIcon(":/ico/ed"));
             trayIcon->setToolTip(tr("已连接"));
-        }
-        else
-        {
+        }  else {
             QMessageBox::warning(this,tr("配置错误"),tr("本地端口监听失败，请检查您的配置！"));
             this->ui->butLogin->setEnabled(true);
         }
@@ -74,24 +71,17 @@ void MainWindow::initUI()
 {
     trayIcon->setToolTip(tr("未连接到服务器！"));
     connect(trayIcon,&QSystemTrayIcon::activated,[&](QSystemTrayIcon::ActivationReason active){
-        if (QSystemTrayIcon::DoubleClick == active)
-        {
-            if (this->isVisible())
-            {
-                if (this->isMinimized())
-                {
+        if (QSystemTrayIcon::DoubleClick == active) {
+            if (this->isVisible()) {
+                if (this->isMinimized()) {
                     this->showNormal();
                     this->raise();
                     this->activateWindow();
-                }
-                else
-                {
+                }  else {
                     this->hide();
                 }
 
-            }
-            else
-            {
+            } else {
                 this->show();
                 this->raise();
                 this->activateWindow();

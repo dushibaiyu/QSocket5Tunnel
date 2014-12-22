@@ -27,8 +27,7 @@ void ConfigClass::loadSetting()
     localPort = sett.value("config/localPort",6666).toInt();
     user = sett.value("config/user").toString();
     QByteArray data = sett.value("config/password").toByteArray();
-    if (!data.isEmpty())
-    {
+    if (!data.isEmpty()) {
         OpensslAES aes(pass);
         data = aes.decrypt(data);
         password = QString::fromUtf8(data);

@@ -21,7 +21,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) //多线程必须�
     ClientSocket * tcpTemp = new ClientSocket(socketDescriptor);
 
     connect(tcpTemp,&ClientSocket::sockDisConnect,this,&TcpServer::sockDisConnectSlot);//NOTE:断开连接的处理，从列表移除，并释放断开的Tcpsocket，此槽必须实现，线程管理计数也是考的他
-    connect(this,&TcpServer::sentDisConnect,tcpTemp,&ClientSocket::disConTcp);//断开信号
+//    connect(this,&TcpServer::sentDisConnect,tcpTemp,&ClientSocket::disConTcp);//断开信号
     connect(th,&QThread::finished,tcpTemp,&ClientSocket::deleteThis);
     tcpTemp->moveToThread(th);//把tcp类移动到新的线程，从线程管理类中获取
     tcpClient->insert(socketDescriptor,tcpTemp);//插入到连接信息中

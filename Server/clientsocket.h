@@ -3,7 +3,7 @@
 
 #include "remotesocket.h"
 #include "../common/datastruct.h"
-#include <QHash>
+#include <QMap>
 
 class ClientSocket : public QTcpSocket
 {
@@ -32,9 +32,10 @@ protected:
     inline bool sentClientData();
 
     bool decryptClientData(swapData & data);
+    inline void sentRemoteDisCon(int socketId);
 private:
     qintptr socketID;
-    QHash<int,RemoteSocket *> socketList;
+    QMap<int,RemoteSocket *> socketList;
     qint32 userID;
     QString token;
     qulonglong lastsize;

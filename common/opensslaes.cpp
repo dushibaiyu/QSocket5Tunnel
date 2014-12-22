@@ -60,8 +60,7 @@ bool OpensslAES::init(const QByteArray &keyData,
     i = EVP_BytesToKey(evpCipher, EVP_sha1(), salt,
                        (const unsigned char*) keyData.constData(), keyData.size(),
                        nrounds, key, iv);
-    if (i*8 != m_blockSize) // i*8 = blocksize in bits
-    {
+    if (i*8 != m_blockSize) { // i*8 = blocksize in bits
         printf("Key size is %d bytes - should be %d bits\n", i, m_blockSize);
         return false;
     }
@@ -76,52 +75,29 @@ bool OpensslAES::init(const QByteArray &keyData,
 
 const EVP_CIPHER *OpensslAES::getEvpCipher() const
 {
-    if (m_type == TypeAes128 && m_mode == ModeCbc)
-    {
+    if (m_type == TypeAes128 && m_mode == ModeCbc) {
         return EVP_aes_128_cbc();
-    }
-    else if (m_type == TypeAes128 && m_mode == ModeCfb)
-    {
+    } else if (m_type == TypeAes128 && m_mode == ModeCfb) {
         return EVP_aes_128_cfb128();
-    }
-    else if (m_type == TypeAes128 && m_mode == ModeEcb)
-    {
+    } else if (m_type == TypeAes128 && m_mode == ModeEcb) {
         return EVP_aes_128_ecb();
-    }
-    else if (m_type == TypeAes128 && m_mode == ModeOfb)
-    {
+    } else if (m_type == TypeAes128 && m_mode == ModeOfb) {
         return EVP_aes_128_ofb();
-    }
-    else if (m_type == TypeAes192 && m_mode == ModeCbc)
-    {
+    } else if (m_type == TypeAes192 && m_mode == ModeCbc) {
         return EVP_aes_192_cbc();
-    }
-    else if (m_type == TypeAes192 && m_mode == ModeCfb)
-    {
+    } else if (m_type == TypeAes192 && m_mode == ModeCfb) {
         return EVP_aes_192_cfb128();
-    }
-    else if (m_type == TypeAes192 && m_mode == ModeEcb)
-    {
+    } else if (m_type == TypeAes192 && m_mode == ModeEcb) {
         return EVP_aes_192_ecb();
-    }
-    else if (m_type == TypeAes192 && m_mode == ModeOfb)
-    {
+    } else if (m_type == TypeAes192 && m_mode == ModeOfb) {
         return EVP_aes_192_ofb();
-    }
-    else if (m_type == TypeAes256 && m_mode == ModeCbc)
-    {
+    } else if (m_type == TypeAes256 && m_mode == ModeCbc) {
         return EVP_aes_256_cbc();
-    }
-    else if (m_type == TypeAes256 && m_mode == ModeCfb)
-    {
+    } else if (m_type == TypeAes256 && m_mode == ModeCfb) {
         return EVP_aes_256_cfb128();
-    }
-    else if (m_type == TypeAes256 && m_mode == ModeEcb)
-    {
+    } else if (m_type == TypeAes256 && m_mode == ModeEcb) {
         return EVP_aes_256_ecb();
-    }
-    else if (m_type == TypeAes256 && m_mode == ModeOfb)
-    {
+    } else if (m_type == TypeAes256 && m_mode == ModeOfb) {
         return EVP_aes_256_ofb();
     }
 
@@ -130,8 +106,7 @@ const EVP_CIPHER *OpensslAES::getEvpCipher() const
 
 int OpensslAES::calcBlockSize() const
 {
-    switch (m_type)
-    {
+    switch (m_type) {
         case TypeAes128:
             return 128;
         case TypeAes192:
@@ -157,23 +132,21 @@ QByteArray OpensslAES::encrypt(const QByteArray &plainData)
     unsigned char *ciphertext = (unsigned char *)malloc(c_len);
 
     /* allows reusing of 'e' for multiple encryption cycles */
-    if (!EVP_EncryptInit_ex(&m_encoder, 0, 0, 0, 0))
-    {
+    if (!EVP_EncryptInit_ex(&m_encoder, 0, 0, 0, 0)) {
         printf("ERROR in EVP_EncryptInit_ex \n");
         return QByteArray();
     }
 
     /* update ciphertext, c_len is filled with the length of ciphertext generated,
         *len is the size of plaintext in bytes */
-    if (!EVP_EncryptUpdate(&m_encoder, ciphertext, &c_len, (const unsigned char *)plainData.constData(), plainData.size()))
-    {
+    if (!EVP_EncryptUpdate(&m_encoder, ciphertext, &c_len,
+                           (const unsigned char *)plainData.constData(), plainData.size())) {
         printf("ERROR in EVP_EncryptUpdate \n");
         return QByteArray();
     }
 
     /* update ciphertext with the final remaining bytes */
-    if (!EVP_EncryptFinal_ex(&m_encoder, ciphertext+c_len, &f_len))
-    {
+    if (!EVP_EncryptFinal_ex(&m_encoder, ciphertext+c_len, &f_len)) {
         printf("ERROR in EVP_EncryptFinal_ex \n");
         return QByteArray();
     }
@@ -193,20 +166,18 @@ QByteArray OpensslAES::decrypt(const QByteArray &cipherData)
     int p_len = cipherData.size(), f_len = 0;
     unsigned char *plaintext = (unsigned char *)malloc(p_len);
 
-    if (!EVP_DecryptInit_ex(&m_decoder, 0, 0, 0, 0))
-    {
+    if (!EVP_DecryptInit_ex(&m_decoder, 0, 0, 0, 0)) {
         printf("ERROR in EVP_DecryptInit_ex\n");
         return QByteArray();
     }
 
-    if (!EVP_DecryptUpdate(&m_decoder, plaintext, &p_len, (const unsigned char*)cipherData.constData(), cipherData.size()))
-    {
+    if (!EVP_DecryptUpdate(&m_decoder, plaintext, &p_len,
+                           (const unsigned char*)cipherData.constData(), cipherData.size())) {
         printf("ERROR in EVP_DecryptUpdate\n");
         return QByteArray();
     }
 
-    if (!EVP_DecryptFinal_ex(&m_decoder, plaintext+p_len, &f_len))
-    {
+    if (!EVP_DecryptFinal_ex(&m_decoder, plaintext+p_len, &f_len)) {
         printf("ERROR in EVP_DecryptFinal_ex\n");
         return QByteArray();
     }

@@ -2,7 +2,7 @@
 #define TcpServer_H
 
 #include <QTcpServer>
-#include <QHash>
+#include <QMap>
 #include "localsocket.h"
 #include "configclass.h"
 
@@ -26,10 +26,10 @@ public slots:
 
     void localSockedDisCon();//断开连接的用户信息
     void LocalSocketRead();
-
+    inline void localDataRead(LocalSocket * sock);
 protected:
     void incomingConnection(qintptr socketDescriptor);
-    void initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);//socket5代理协议
+    bool initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);//socket5代理协议
 
     void handleSwapData();
     void handleUserLog();
@@ -37,7 +37,7 @@ protected:
 
     inline bool sentServerData();
 private:
-    QHash<int,LocalSocket *> * tcpClient;//管理连接的map
+    QMap<int,LocalSocket *> * tcpClient;//管理连接的map
     qint32 userID;// = -1;//用户ID
     QString tocken;
     QTcpSocket * serverSocket;

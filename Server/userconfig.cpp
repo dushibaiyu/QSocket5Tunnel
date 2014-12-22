@@ -7,14 +7,12 @@
 
 UserConfig::UserConfig()
 {
-    if (QFile::exists("UserConfig"))
-    {
+    if (QFile::exists("UserConfig")) {
         QFile file("UserConfig");
         file.open(QFile::ReadOnly);
         QTextStream stream(&file);
         QStringList list;
-        while(!stream.atEnd())
-        {
+        while(!stream.atEnd()) {
             list = stream.readLine().split(';');
             if (list.size() != 4) continue;
             int id = list.at(2).toInt();
@@ -22,8 +20,7 @@ UserConfig::UserConfig()
             userHash.insert(list.at(0),qMakePair(list.at(1),id));
         }
     }
-    if (userHash.isEmpty())
-    {
+    if (userHash.isEmpty()) {
         userHash.insert(QString("dushibaiyu"),qMakePair(QString("www.dushibaiyu.com"),1000));
     }
 }
@@ -31,12 +28,11 @@ UserConfig::UserConfig()
 int UserConfig::getUserId(const QString &user, const QString &pass, QString &token)
 {
     QHash<QString,QPair<QString,int> >::iterator it = userHash.find(user);
-    if (it == userHash.end())
+    if (it == userHash.end()) {
         return -1;
-    else if (it.value().first != pass)
+    } else if (it.value().first != pass) {
         return -1;
-    else
-    {
+    } else {
         token = QUuid::createUuid().toString();
         tokenHash[it.value().second] = token ;
         return it.value().second;

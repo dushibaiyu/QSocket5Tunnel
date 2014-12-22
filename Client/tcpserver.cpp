@@ -23,7 +23,6 @@ TcpServer::~TcpServer()
     delete tcpClient;
     if (aes != nullptr)
         delete aes;
-
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
@@ -31,37 +30,35 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     LocalSocket * tcpTemp = new LocalSocket(socketDescriptor,this);
     QString thisHost;
     qint16 thisPort;
-    if (isSerCon)
-    {
-//        QTime tm;
-//        tm.start();
-        initLocalProxy(thisHost,thisPort,tcpTemp);
-//        qDebug() << "initLocalProxy" << tm.elapsed();
-        connect(tcpTemp,&LocalSocket::readyRead,this,&TcpServer::LocalSocketRead);
-        connect(tcpTemp,&LocalSocket::disconnected,this,&TcpServer::localSockedDisCon);
+    if (isSerCon) {
+        if (!initLocalProxy(thisHost,thisPort,tcpTemp)) return;
         data.operater = 1;
         data.socketID = socketDescriptor;
         data.userID = this->userID;
         newHost = qMakePair(thisHost,thisPort);
         if (!serializeData(bytearry,newHost)) return ;
         data.data = encryptData(aes,bytearry);
-        if (sentServerData())
+        if (sentServerData()) {
+            connect(tcpTemp,&LocalSocket::readyRead,this,&TcpServer::LocalSocketRead);
+            connect(tcpTemp,&LocalSocket::disconnected,this,&TcpServer::localSockedDisCon);
             tcpClient->insert(socketDescriptor,tcpTemp);
-    }
-    else
-    {
+            localDataRead(tcpTemp);
+        } else {
+            tcpTemp->disconnectFromHost();
+            tcpTemp->deleteLater();
+        }
+    } else {
         tcpTemp->close();
         tcpTemp->deleteLater();
         serverSocket->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
-        if (serverSocket->waitForConnected())
-        {
+        if (serverSocket->waitForConnected(5000)) {
             isSerCon = true;
         }
         return;
     }
 }
 
-void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock)
+bool TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock)
 {
     QByteArray generalError;
     generalError.append((char)0x05); // SOCKS5
@@ -78,7 +75,7 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
     if(ba.at(0)!=5) {
         sock->close();
         sock->deleteLater();
-        return;
+        return false;
     }
     while(sock->bytesAvailable() < authCnt)
         sock->waitForReadyRead();
@@ -101,20 +98,20 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         sock->waitForBytesWritten();
         sock->close();
         sock->deleteLater();
-        return;
+        return false;
     } else if(ba.at(1)!=1) {
         // only handle "open stream" requests
         sock->write(generalError);
         sock->waitForBytesWritten();
         sock->close();
         sock->deleteLater();
-        return;
+        return false;
     } else if(ba.at(2)!=0) {
         sock->write(generalError);
         sock->waitForBytesWritten();
         sock->close();
         sock->deleteLater();
-        return;
+        return false;
     }
     // reuse old response object containing 0x05, 0x00
     // 1st byte = SOCKS version
@@ -164,7 +161,7 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         sock->waitForBytesWritten();
         sock->close();
         sock->deleteLater();
-        return;
+        return false;
     }
     }
     while(sock->bytesAvailable() < 2)
@@ -174,23 +171,20 @@ void TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
     thisPort = qFromBigEndian<qint16>((uchar*)ba.constData());
     response.append(ba);
     sock->write(response); // notify success and proceed with remote connection
+    return true;
 }
 
 void TcpServer::socketConnect()
 {
     serverSocket->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
-    if (serverSocket->waitForConnected())
-    {
+    if (serverSocket->waitForConnected(5000)) {
         isSerCon = true;
         data.operater = 3;
-
             QPair<QString,QString> host(ConfigClass::getClass().user,ConfigClass::getClass().password);
         if (!serializeData(bytearry,host)) return;
         data.data = bytearry;
         sentServerData();
-    }
-    else
-    {
+    } else {
         isSerCon = false;
         emit notToServer();
     }
@@ -198,21 +192,15 @@ void TcpServer::socketConnect()
 
 void TcpServer::serSocketRead()
 {
-//    QTime tm;
-//    tm.start();
-    if (lastsize == 0)
-    {
+    if (lastsize == 0) {
         if (serverSocket->bytesAvailable() < 6) return;
         basize = serverSocket->read(6);
         lastsize = basize.toLongLong(0,16);
     }
-    while (serverSocket->bytesAvailable() >= static_cast<qint64>(lastsize))
-    {
+    while (serverSocket->bytesAvailable() >= static_cast<qint64>(lastsize)) {
         bytearry = serverSocket->read(lastsize);
-        if(deSerializeData(bytearry,data))
-        {
-            switch (data.operater)
-            {
+        if(deSerializeData(bytearry,data)) {
+            switch (data.operater) {
             case 0:
                 handleSwapData();
                 break;
@@ -226,19 +214,14 @@ void TcpServer::serSocketRead()
                 break;
             }
         }
-        if (!serverSocket->atEnd() && serverSocket->bytesAvailable() > 6)
-        {
+        if (!serverSocket->atEnd() && serverSocket->bytesAvailable() > 6) {
             basize = serverSocket->read(6);
             lastsize = basize.toLongLong(0,16);
-        }
-        else
-        {
+        } else {
             lastsize = 0 ;
-//            qDebug() << "lastsize = 0 " << tm.elapsed();
             return ;
         }
     }
-//    qDebug() << "serSocketRead " << tm.elapsed() << " " << lastsize;
 }
 
 void TcpServer::serSocketDisCon()
@@ -249,10 +232,9 @@ void TcpServer::serSocketDisCon()
     emit notToServer();
 }
 
-void TcpServer::LocalSocketRead()
+void TcpServer::localDataRead(LocalSocket * sock)
 {
-    LocalSocket * sock = qobject_cast<LocalSocket *>(QObject::sender());
-    Q_ASSERT(sock);
+    if (sock->bytesAvailable() <= 0) return;
     data.operater = 0;
     data.socketID = sock->getSocketID();
     data.userID = this->userID;
@@ -260,12 +242,18 @@ void TcpServer::LocalSocketRead()
     sentServerData();
 }
 
+void TcpServer::LocalSocketRead()
+{
+    LocalSocket * sock = qobject_cast<LocalSocket *>(QObject::sender());
+    Q_ASSERT(sock);
+    localDataRead(sock);
+}
+
 void TcpServer::localSockedDisCon()
 {
     LocalSocket * sock = qobject_cast<LocalSocket *>(QObject::sender());
     Q_ASSERT(sock);
-    if (tcpClient->contains(sock->getSocketID()))
-    {
+    if (tcpClient->contains(sock->getSocketID())) {
         data.operater = 2;
         data.socketID = sock->getSocketID();
         data.userID = this->userID;
@@ -279,8 +267,7 @@ void TcpServer::localSockedDisCon()
 void TcpServer::handleDisCon()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != nullptr)
-    {
+    if (sock != nullptr) {
         tcpClient->remove(data.socketID);
         if (sock->state() == QTcpSocket::ConnectedState)
             sock->disconnectFromHost();
@@ -292,12 +279,9 @@ void TcpServer::handleDisCon()
 void TcpServer::handleSwapData()
 {
     LocalSocket * sock = tcpClient->value(data.socketID,nullptr);
-    if (sock != nullptr && decryptData(aes,data.data))
-    {
+    if (sock != nullptr && decryptData(aes,data.data)) {
         sock->write(data.data);
-    }
-    else
-    {
+    } else {
         data.operater = 2;
         data.data.clear();
         sentServerData();
@@ -317,8 +301,7 @@ inline bool TcpServer::sentServerData()
 
 void TcpServer::handleUserLog()
 {
-    if (data.userID == -1 || data.data.isEmpty())
-    {
+    if (data.userID == -1 || data.data.isEmpty()) {
         emit userErro();
         return;
     }
@@ -327,12 +310,9 @@ void TcpServer::handleUserLog()
     if (aes != nullptr)
         delete aes;
     aes = new OpensslAES(data.data);
-    if(!this->listen(QHostAddress::Any,ConfigClass::getClass().localPort))
-    {
+    if(!this->listen(QHostAddress::Any,ConfigClass::getClass().localPort)) {
         emit listenState(false);
-    }
-    else
-    {
+    } else {
         emit listenState(true);
     }
 }
