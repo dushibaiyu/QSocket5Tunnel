@@ -88,7 +88,6 @@ void ClientSocket::remoteData()
 
 void ClientSocket::sentRemoteDisCon(int socketId)
 {
-    socketList.remove(sock->getSocketID());
     data.operater = 2;
     data.socketID = socketId;
     data.userID = this->userID;
@@ -101,6 +100,7 @@ void ClientSocket::remoteDisCon()
     RemoteSocket * sock = qobject_cast<RemoteSocket *>(QObject::sender());
     Q_ASSERT(sock);
     if (socketList.contains(sock->getSocketID())) {
+        socketList.remove(sock->getSocketID());
         sentRemoteDisCon(sock->getSocketID());
     }
     sock->deleteLater();

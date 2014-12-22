@@ -11,7 +11,7 @@
 TcpServer::TcpServer(QObject *parent) :
     QTcpServer(parent),userID(-1),lastsize(0),aes(nullptr)
 {
-     tcpClient = new  QHash<int,LocalSocket *>;
+     tcpClient = new  QMap<int,LocalSocket *>;
      serverSocket = new QTcpSocket(this);
      isSerCon = false;
      connect(serverSocket,&QTcpSocket::readyRead,this,&TcpServer::serSocketRead);
