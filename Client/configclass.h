@@ -12,10 +12,11 @@ public:
     void saveSetting();
 
     QString serverUrl;
+    QString key;
     int serverPort;
     int localPort;
-    QString user;
-    QString password;
+    int MaxThread;
+    int MaxCache;
 
 private:
     void loadSetting();

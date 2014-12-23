@@ -42,33 +42,6 @@ void MainWindow::on_butLogin_clicked()
     ser->socketConnect();
 }
 
-void MainWindow::connectSlots()
-{
-    connect(ser,&TcpServer::userErro,[&](){
-        QMessageBox::warning(this,tr("登录失败"),tr("登录失败，用户名或密码错误！"));
-        this->ui->butLogin->setEnabled(true);
-    });
-    connect(ser,&TcpServer::notToServer,[&](){
-        QMessageBox::warning(this,tr("网络错误"),tr("无法链接到服务器，请检查您的配置！"));
-        this->ui->stackedWidget->setCurrentIndex(0);
-        this->ui->butLogin->setEnabled(true);
-        trayIcon->setIcon(QIcon(":/ico/un"));
-        trayIcon->setToolTip(tr("未连接到服务器！"));
-    });
-    connect(ser,&TcpServer::listenState,[&](bool lis){
-        if (lis)
-        {
-            this->ui->stackedWidget->setCurrentIndex(1);
-            trayIcon->setIcon(QIcon(":/ico/ed"));
-            trayIcon->setToolTip(tr("已连接"));
-        }
-        else
-        {
-            QMessageBox::warning(this,tr("配置错误"),tr("本地端口监听失败，请检查您的配置！"));
-            this->ui->butLogin->setEnabled(true);
-        }
-    });
-}
 
 void MainWindow::initUI()
 {
@@ -103,6 +76,6 @@ void MainWindow::initUI()
     this->ui->loaPort->setValue(config.localPort);
     this->ui->serPort->setValue(config.serverPort);
     this->ui->lineServer->setText(config.serverUrl);
-    this->ui->lineUser->setText(config.user);
+    this->ui->password->setText(config.key);
     this->ui->linepword->setText(config.password);
 }

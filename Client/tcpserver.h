@@ -2,9 +2,9 @@
 #define TcpServer_H
 
 #include <QTcpServer>
-#include <QHash>
+#include <QList>
 #include "configclass.h"
-
+#include "clientconmanger.h"
 
 class TcpServer : public QTcpServer
 {
@@ -12,41 +12,17 @@ class TcpServer : public QTcpServer
 public:
     explicit TcpServer(QObject *parent = 0);
     ~TcpServer();
-signals:
-    void notToServer();
-    void userErro();
-    void listenState(bool);
-
-public slots:
-    void socketConnect();
-
-    void serSocketRead();
-    void serSocketDisCon();
-
-    void localSockedDisCon();//断开连接的用户信息
-    void LocalSocketRead();
-
+     void clear();
 protected:
     void incomingConnection(qintptr socketDescriptor);
-
-    void handleSwapData();
-    void handleUserLog();
-    void handleDisCon();
-
-    inline bool sentServerData();
+    void goFawrd() {
+        cutsize ++;
+        if (cutsize >= manger.size())
+            cutsize = 0;
+    }
 private:
-    QHash<int,LocalSocket *> * tcpClient;//管理连接的map
-    qint32 userID;// = -1;//用户ID
-    QString tocken;
-    QTcpSocket * serverSocket;
-    bool isSerCon;
-    qulonglong lastsize;
-    OpensslAES * aes;
-
-private://临时变量，放到类里，优化每次分配
-    swapData data;
-    QByteArray bytearry,basize;
-    QPair<QString , qint16> newHost;
+    QList<ClientConManger *> manger;
+    int cutsize;
 };
 
 #endif // TcpServer_H

@@ -23,7 +23,9 @@ SOURCES += \
         $$PWD/../common/opensslaes.cpp \
         $$PWD/configclass.cpp \
         $$PWD/../common/conversation.cpp \
-    clientconver.cpp
+    clientconver.cpp \
+    ../common/conversationmanger.cpp \
+    clientconmanger.cpp
 
 
 HEADERS  += \
@@ -33,7 +35,9 @@ HEADERS  += \
         $$PWD/../common/opensslaes.h \
         $$PWD/configclass.h \
         $$PWD/../common/conversation.h \
-    clientconver.h
+    clientconver.h \
+    ../common/conversationmanger.h \
+    clientconmanger.h
 
 
 FORMS    += $$PWD/mainwindow.ui

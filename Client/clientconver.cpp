@@ -1,6 +1,7 @@
 ﻿#include "clientconver.h"
 #include <QTcpSocket>
 #include "../common/datastruct.h"
+#include "configclass.h"
 
 ClientConver::ClientConver(OpensslAES *aes, QObject *parent)
     : Conversation(aes,parent)
@@ -18,19 +19,21 @@ bool ClientConver::initConSocket(qint16 socket)
     QString thisHost;
     qint16 thisPort = 0;
     if (initLocalProxy(thisHost,thisPort,socket)) {
-        QByteArray data(thisHost.toUtf8());
-        data += "\n";
-        data += QByteArray::number(thisPort);
-        data = encryptData(aes,data);
-        int size = data.size();
-        QByteArray basize = QByteArray::number(size,16);
-        while(basize.size() < 4)
-            basize.insert(0,'0');
-        serverSocket->write(basize + data);
-        return true;
-    } else {
-        return false;
+        socket2->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
+        if (socket2->waitForConnected(5000)) {
+            QByteArray data(thisHost.toUtf8());
+            data += "\n";
+            data += QByteArray::number(thisPort);
+            data = encryptData(aes,data);
+            int size = data.size();
+            QByteArray basize = QByteArray::number(size,16);
+            while(basize.size() < 4)
+                basize.insert(0,'0');
+            socket2->write(basize + data);
+            return true;
+        }
     }
+    return false;
 }
 
 bool ClientConver::initLocalProxy(QString &thisHost, qint16 &thisPort, QTcpSocket *sock)
@@ -38,8 +41,8 @@ bool ClientConver::initLocalProxy(QString &thisHost, qint16 &thisPort, QTcpSocke
     QByteArray generalError;
     generalError.append((char)0x05); // SOCKS5
     generalError.append((char)0x01); // general error
-
-    sock->waitForReadyRead();
+    if (sock->bytesAvailable() < 2)
+        sock->waitForReadyRead();
     QByteArray ba = sock->read(2);
     // 1st byte - SOCKS version
     // 2nd byte - Auth method count
