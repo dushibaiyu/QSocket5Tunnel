@@ -30,7 +30,7 @@ public:
     NewConEvent(): QEvent(EventType){}
     static const QEvent::Type EventType;
     qint16 getSocketNofy() const {return this->mofy;}
-    void setSocketNofy(qint16 nofy) {this->nofy = nofy;}
+    void setSocketNofy(qint16 nofy) {this->mofy = nofy;}
 private:
     qint16 mofy;
 };

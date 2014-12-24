@@ -1,5 +1,7 @@
 ﻿#include "clientconver.h"
 #include <QTcpSocket>
+#include <QtEndian>
+#include <QHostAddress>
 #include "../common/datastruct.h"
 #include "configclass.h"
 
@@ -18,7 +20,8 @@ bool ClientConver::initConSocket(qint16 socket)
 {
     QString thisHost;
     qint16 thisPort = 0;
-    if (initLocalProxy(thisHost,thisPort,socket)) {
+    socket1->setSocketDescriptor(socket);
+    if (initLocalProxy(thisHost,thisPort,socket1)) {
         socket2->connectToHost(ConfigClass::getClass().serverUrl,ConfigClass::getClass().serverPort);
         if (socket2->waitForConnected(5000)) {
             QByteArray data(thisHost.toUtf8());

@@ -27,6 +27,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     auto tmp = new NewConEvent;
     tmp->setSocketNofy(socketDescriptor);
     QCoreApplication::postEvent(manger[cutsize],tmp);
+
 }
 
 void TcpServer::clear()

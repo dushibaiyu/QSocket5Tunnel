@@ -1,10 +1,9 @@
 ﻿#include "clientconmanger.h"
 #include "clientconver.h"
-#include ""
 #include <QThread>
 
 ClientConManger::ClientConManger(const QString & key,int maxCache,QObject *parent)
-    : ClientConManger(key,maxCache,parent)
+    : ConversationManger(key,maxCache,parent)
 {
     th = new QThread;
     th->start();
@@ -20,7 +19,7 @@ ClientConManger::~ClientConManger()
 
 Conversation * ClientConManger::newCConversation()
 {
-    auto con = new ClientConver(this);
+    auto con = new ClientConver(aes,this);
     connect(con,&ClientConver::connectionClosed,this,&ClientConManger::newCache);
     return con;
 }

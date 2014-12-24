@@ -26,8 +26,8 @@ void ConfigClass::loadSetting()
     serverPort = sett.value("config/serverPort",8888).toInt();
     key = sett.value("config/Key","dushibaiyu.com").toString();
     localPort = sett.value("config/localPort",6666).toInt();
-    MaxThread = sett.value("config/MaxThread",10).toInt();
-    MaxCache = sett.value("config/MaxCache",50).toInt();
+    MaxThread = sett.value("config/MaxThread",5).toInt();
+    MaxCache = sett.value("config/MaxCache",20).toInt();
 }
 
 void ConfigClass::saveSetting()

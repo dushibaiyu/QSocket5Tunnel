@@ -1,7 +1,8 @@
 ﻿#include "conversationmanger.h"
 #include "opensslaes.h"
+#include <QDebug>
 
-QEvent::Type NewConEvent::EventType = (QEvent::Type)QEvent::registerEventType();
+const QEvent::Type NewConEvent::EventType = (QEvent::Type)QEvent::registerEventType();
 
 ConversationManger::ConversationManger(const QString &key, int maxCache, QObject *parent)
     : QObject(parent),max(maxCache)
@@ -24,6 +25,7 @@ void ConversationManger::newCache(Conversation * con)
 
 void ConversationManger::customEvent(QEvent *event)
 {
+//    qDebug() << "ConversationManger::customEvent(QEvent *event)";
     if (event->type() == NewConEvent::EventType) {
         auto ev = static_cast<NewConEvent *>(event);
         Conversation * con;
@@ -33,7 +35,7 @@ void ConversationManger::customEvent(QEvent *event)
             con = cacheCon.dequeue();
         }
         if (!con->setDescriptor(ev->getSocketNofy()))
-            cacheCon.append(con);
+            con->deleteLater();
         ev->accept();
     } else {
         QObject::customEvent(event);

@@ -1,8 +1,6 @@
 ﻿#ifndef DATASTRUCT_H
 #define DATASTRUCT_H
-#include <QDataStream>
 #include <QByteArray>
-#include <QDebug>
 #include "opensslaes.h"
 
 inline bool decryptData( OpensslAES * aes,QByteArray & data)

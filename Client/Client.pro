@@ -18,14 +18,13 @@ CONFIG += C++11
 SOURCES += \
         $$PWD/main.cpp\
         $$PWD/mainwindow.cpp \
-        $$PWD/../common/datastruct.cpp \
         $$PWD/tcpserver.cpp \
         $$PWD/../common/opensslaes.cpp \
         $$PWD/configclass.cpp \
         $$PWD/../common/conversation.cpp \
-    clientconver.cpp \
-    ../common/conversationmanger.cpp \
-    clientconmanger.cpp
+        $$PWD/clientconver.cpp \
+        $$PWD/../common/conversationmanger.cpp \
+        $$PWD/clientconmanger.cpp
 
 
 HEADERS  += \
@@ -35,9 +34,9 @@ HEADERS  += \
         $$PWD/../common/opensslaes.h \
         $$PWD/configclass.h \
         $$PWD/../common/conversation.h \
-    clientconver.h \
-    ../common/conversationmanger.h \
-    clientconmanger.h
+        $$PWD/clientconver.h \
+        $$PWD/../common/conversationmanger.h \
+        $$PWD/clientconmanger.h
 
 
 FORMS    += $$PWD/mainwindow.ui

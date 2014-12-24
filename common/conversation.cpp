@@ -4,7 +4,7 @@
 #include <QTcpSocket>
 
 Conversation::Conversation(OpensslAES *aes, QObject *parent) :
-    QObject(parent),remote(nullptr),local(nullptr)
+    QObject(parent),socket1(nullptr),socket2(nullptr),aes(aes)
 {}
 
 bool Conversation::setDescriptor(qint16 socket)
@@ -12,7 +12,7 @@ bool Conversation::setDescriptor(qint16 socket)
     if (socket2 == nullptr) {
         socket2 = new QTcpSocket(this);
     } else {
-        if (socket2->state() == QTcpSocket::connected())
+        if (socket2->state() == QTcpSocket::ConnectedState)
             socket2->disconnectFromHost();
         disconnect(socket2, &QTcpSocket::readyRead, this, &Conversation::socket2Read);
         disconnect(socket2, &QTcpSocket::disconnected, this, &Conversation::socket2Closed);
@@ -21,13 +21,13 @@ bool Conversation::setDescriptor(qint16 socket)
     if (socket1 == nullptr) {
         socket1 = new QTcpSocket(this);
     } else {
-        if (socket1->state() == QTcpSocket::connected())
+        if (socket1->state() == QTcpSocket::ConnectedState)
             socket1->disconnectFromHost();
         disconnect(socket1, &QTcpSocket::readyRead, this, &Conversation::socket1Read);
         disconnect(socket1, &QTcpSocket::disconnected, this, &Conversation::socket1Closed);
     }
 
-    if (initLocalSocket(socket)) {
+    if (initConSocket(socket)) {
         connectSockets();
         return true;
     }
@@ -65,7 +65,7 @@ void Conversation::socket2Read()
 
 void Conversation::socket2Closed()
 {
-    if(socket1->state() != QTcpSocket::connected())
+    if(socket1->state() != QTcpSocket::ConnectedState)
         emit connectionClosed(this);
     else
         socket1->disconnectFromHost();
@@ -73,7 +73,7 @@ void Conversation::socket2Closed()
 }
 
 void Conversation::socket1Closed() {
-    if(socket2->state() != QTcpSocket::connected())
+    if(socket2->state() != QTcpSocket::ConnectedState)
         emit connectionClosed(this);
     else
         socket2->disconnectFromHost();

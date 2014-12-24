@@ -9,7 +9,7 @@ class MainWindow;
 }
 
 class QSystemTrayIcon;
-//TODO：保存配置
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -18,10 +18,9 @@ public:
     ~MainWindow();
 
 protected slots:
-    void on_butLogin_clicked();
+    void on_pushButton_clicked();
 
 protected:
-    void connectSlots();
     void initUI();
 private:
     Ui::MainWindow *ui;

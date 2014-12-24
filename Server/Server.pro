@@ -18,22 +18,26 @@ TEMPLATE = app
 
 CONFIG += C++11
 
-SOURCES += $$PWD/main.cpp \
-    $$PWD/tcpserver.cpp \
-    $$PWD/threadhandle.cpp \
-    $$PWD/clientsocket.cpp \
-    $$PWD/../common/datastruct.cpp \
-    $$PWD/userconfig.cpp \
-    $$PWD/../common/opensslaes.cpp
 
 HEADERS += \
+    $$PWD/configclass.h \
+    $$PWD/serverconmanger.h \
+    $$PWD/serverconver.h \
+    $$PWD/../common/conversation.h \
+    $$PWD/../common/conversationmanger.h \
     $$PWD/../common/datastruct.h \
-    $$PWD/tcpserver.h \
-    $$PWD/threadhandle.h \
-    $$PWD/remotesocket.h \
-    $$PWD/clientsocket.h \
-    $$PWD/userconfig.h \
-    $$PWD/../common/opensslaes.h
+    $$PWD/../common/opensslaes.h \
+    $$PWD/tcpserver.h
+
+SOURCES += \
+    $$PWD/configclass.cpp \
+    $$PWD/serverconmanger.cpp \
+    $$PWD/serverconver.cpp \
+    $$PWD/../common/conversation.cpp \
+    $$PWD/../common/conversationmanger.cpp \
+    $$PWD/../common/opensslaes.cpp \
+    $$PWD/main.cpp \
+    $$PWD/tcpserver.cpp
 
 
 win32:LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
@@ -47,3 +51,4 @@ else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
 unix:LIBS += -lcrypto
 
 #include(3rdparty/libev_eventdispatcher.pri)
+

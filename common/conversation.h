@@ -25,7 +25,6 @@ protected slots:
 protected:
     QTcpSocket * socket1;
     QTcpSocket * socket2;//这个是链接加密端数据的，所以客户端和服务端用的地方不一样
-private:
     OpensslAES * aes;
 };
 
