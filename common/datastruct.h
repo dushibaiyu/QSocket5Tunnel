@@ -33,10 +33,9 @@ inline bool serializeData(QByteArray & data, T & structed)
     QDataStream stream(&data,QIODevice::WriteOnly);
     stream.setVersion(DATASTREAM_VISION);
     stream << structed;
-    if (stream.status() == QDataStream::Ok)
+    if (stream.status() == QDataStream::Ok) {
         return true;
-    else
-    {
+    } else {
         qDebug() << "数据序列化错误。";
         return false;
     }
@@ -49,10 +48,9 @@ inline bool deSerializeData(QByteArray & data, T & structed)
     QDataStream stream(&data,QIODevice::ReadOnly);
     stream.setVersion(DATASTREAM_VISION);
     stream >> structed;
-    if (stream.status() == QDataStream::Ok)
+    if (stream.status() == QDataStream::Ok) {
         return true;
-    else
-    {
+    } else {
         qDebug() << "数据反序列化错误。";
         return false;
     }

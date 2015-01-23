@@ -130,7 +130,7 @@ bool TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         QHostAddress addr(qFromBigEndian<quint32>((uchar*)ba.constData()));
         thisHost = addr.toString();
         response.append(ba);
-    };
+        }
         break;
         // domain name
     case 3: {
@@ -144,7 +144,7 @@ bool TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         ba = sock->read(len);
         thisHost = ba;
         response.append(ba);
-    };
+        }
         break;
     case 4:{
         while(sock->bytesAvailable() < 16)
@@ -153,7 +153,7 @@ bool TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         QHostAddress addr(ba.constData());
         thisHost = addr.toString();
         response.append(ba);
-    };
+        }
         break;
     default: {
         // deny IPv6 (yes, I'm lazy, it's just a few lines of code) and incorrect values
@@ -162,7 +162,7 @@ bool TcpServer::initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket 
         sock->close();
         sock->deleteLater();
         return false;
-    }
+        }
     }
     while(sock->bytesAvailable() < 2)
         sock->waitForReadyRead();
