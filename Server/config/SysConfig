@@ -1,4 +1,4 @@
 [General]
 bindPort=8888
 ThreadType=false
-ThreadMax=100
+ThreadMax=5

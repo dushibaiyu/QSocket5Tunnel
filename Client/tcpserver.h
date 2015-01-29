@@ -26,7 +26,7 @@ public slots:
 
     void localSockedDisCon();//断开连接的用户信息
     void LocalSocketRead();
-    inline void localDataRead(LocalSocket * sock);
+    void localDataRead(LocalSocket * sock);
 protected:
     void incomingConnection(qintptr socketDescriptor);
     bool initLocalProxy(QString & thisHost,qint16 & thisPort,LocalSocket * sock);//socket5代理协议

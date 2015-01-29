@@ -40,6 +40,8 @@ RESOURCES += \
 
 RC_ICONS = $$PWD/rc/connecd.ico
 
+unix:LIBS += -lcrypto
+
 win32:
 {
     win32-g++:{
@@ -48,10 +50,8 @@ win32:
     }
 }
 
-INCLUDEPATH += C:/OpenSSL-Win32/include
-DEPENDPATH += C:/OpenSSL-Win32/include
-
-
+win32:INCLUDEPATH += C:/OpenSSL-Win32/include
+win32:DEPENDPATH += C:/OpenSSL-Win32/include
 
 win32:CONFIG(release, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/static/ -llibeay32MT
 else:win32:CONFIG(debug, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/static/ -llibeay32MTd
