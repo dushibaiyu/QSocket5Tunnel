@@ -2,8 +2,6 @@
 #define THREADHANDLE_H
 
 #include <QThread>
-#include <QQueue>
-#include <QList>
 #include <QHash>
 #include <QMutex>
 //线程管理类，类似于一个线程池，单例类
