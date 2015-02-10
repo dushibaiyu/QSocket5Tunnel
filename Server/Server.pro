@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network
+QT       += core # network
 
 QT       -= gui
 
@@ -19,7 +19,7 @@ TEMPLATE = app
 CONFIG += C++11
 
 SOURCES += $$PWD/main.cpp \
-    $$PWD/tcpserver.cpp \
+    $$PWD/threadserver.cpp \
     $$PWD/threadhandle.cpp \
     $$PWD/clientsocket.cpp \
     $$PWD/../common/datastruct.cpp \
@@ -28,22 +28,25 @@ SOURCES += $$PWD/main.cpp \
 
 HEADERS += \
     $$PWD/../common/datastruct.h \
-    $$PWD/tcpserver.h \
+    $$PWD/threadserver.h \
     $$PWD/threadhandle.h \
     $$PWD/remotesocket.h \
     $$PWD/clientsocket.h \
     $$PWD/userconfig.h \
     $$PWD/../common/opensslaes.h
 
+include ($$PWD/QAsioSocket/src/AsioTcp.pri)
 
-win32:LIBS += -LC:/OpenSSL-Win32/lib/MinGW/ -leay32
 
 win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 win32:DEPENDPATH += C:/OpenSSL-Win32/include
 
-win32:!win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/eay32.lib
-else:win32-g++: PRE_TARGETDEPS += C:/OpenSSL-Win32/lib/MinGW/libeay32.a
+win32:CONFIG(release, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/ -llibeay32M
+else:win32:CONFIG(debug, debug|release): LIBS += -LC:/OpenSSL-Win32/lib/VC/ -llibeay32Md
 
 unix:LIBS += -lcrypto
 
 #include(3rdparty/libev_eventdispatcher.pri)
+
+
+

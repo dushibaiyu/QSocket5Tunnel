@@ -5,24 +5,22 @@
 #include "../common/datastruct.h"
 #include <QMap>
 
-class ClientSocket : public QTcpSocket
+class ThreadServer;
+
+class ClientSocket : public QAsioTcpSocket
 {
     Q_OBJECT
 public:
-    explicit ClientSocket(qintptr socketDescriptor,QObject *parent = 0);
     ~ClientSocket();
 
 signals:
-    void sockDisConnect(const int ,const QString &,const quint16, QThread *);//NOTE:断开连接的用户信息，此信号必须发出！线程管理类根据信号计数的
-public slots:
-    void sentData(const QByteArray & ,const int);//发送信号的槽
-    void disConTcp(int i);
+    void sentDiscon(QThread * th,int id);
 
-    void deleteThis();
 protected slots:
     void remoteData();
     void remoteDisCon();
     void clientData();
+
 protected:
     void handleSwapData();
     void handleUserLog();
@@ -33,8 +31,13 @@ protected:
 
     bool decryptClientData(swapData & data);
     inline void sentRemoteDisCon(int socketId);
+
+protected:
+    explicit ClientSocket(asio::ip::tcp::socket * socket, QObject *parent = 0);
+    friend class ThreadServer;
+    Q_DISABLE_COPY(ClientSocket)
 private:
-    qintptr socketID;
+    int socketID;
     QMap<int,RemoteSocket *> socketList;
     qint32 userID;
     QString token;

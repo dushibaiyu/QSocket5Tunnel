@@ -54,6 +54,7 @@ void MainWindow::connectSlots()
         this->ui->butLogin->setEnabled(true);
         trayIcon->setIcon(QIcon(":/ico/un"));
         trayIcon->setToolTip(tr("未连接到服务器！"));
+        ser->close();
     });
     connect(ser,&TcpServer::listenState,[&](bool lis){
         if (lis) {

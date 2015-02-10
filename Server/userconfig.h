@@ -34,13 +34,13 @@ public :
     void saveConfig();
     int getBindPort() const
     {return port;}
-    bool getThreadType() const
-    {return type;}
+//    bool getThreadType() const
+//    {return type;}
     int getMaxThread() const
     {return size;}
 private:
     int port;
     int size;
-    bool type;//true:固定每个链接处理几个，false：固定线程数
+//    bool type;//true:固定每个链接处理几个，false：固定线程数
 };
 #endif // USERCONFIG_H

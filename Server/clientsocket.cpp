@@ -1,41 +1,26 @@
 ﻿#include "clientsocket.h"
-#include <QHostAddress>
+//#include <QHostAddress>
 #include <QThread>
 #include "userconfig.h"
 
-ClientSocket::ClientSocket(qintptr socketDescriptor, QObject *parent) : //构造函数在主线程执行，lambda在子线程
-    QTcpSocket(parent),socketID(socketDescriptor),userID(-1),lastsize(0),aes(nullptr)
+ClientSocket::ClientSocket(asio::ip::tcp::socket * socket, QObject *parent) :
+    QAsioTcpSocket(socket,4096,parent),userID(-1),lastsize(0),aes(nullptr)
 {
-    this->setSocketDescriptor(socketDescriptor);
-
-    connect(this,&ClientSocket::readyRead,this,&ClientSocket::clientData);
+    socketID = socketDescriptor();
+    connect(this,&ClientSocket::readReadly,this,&ClientSocket::clientData);
     connect(this,&ClientSocket::disconnected, [&](){
-        emit sockDisConnect(socketID,this->peerAddress().toString(),this->peerPort(),QThread::currentThread());//发送断开连接的用户信息
-        this->deleteLater();
+        emit sentDiscon(QThread::currentThread(),socketID);//发送断开连接的用户信息
     });
-
 }
 
 ClientSocket::~ClientSocket()
 {
     if (aes != nullptr)
         delete aes;
-}
-
-void ClientSocket::sentData(const QByteArray &data, const int id)
-{
-    if(id == socketID) {
-        write(data);
+    if (!socketList.isEmpty()) {
+        qDeleteAll(socketList.begin(),socketList.end());
     }
-}
-
-void ClientSocket::disConTcp(int i)
-{
-    if (i == socketID) {
-        this->disconnectFromHost();
-    } else if (i == -1) {//-1为全部断开
-        this->disconnectFromHost();
-    }
+    socketList.clear();
 }
 
 void ClientSocket::clientData()
@@ -113,14 +98,9 @@ void ClientSocket::handleNewCon()
     if (newHost.first.isEmpty()) return;
     RemoteSocket * sock = new RemoteSocket(data.socketID,this);
     sock->connectToHost(newHost.first,newHost.second);
-    if ( sock->waitForConnected(5000)) {
-        connect(sock,&RemoteSocket::readyRead,this,&ClientSocket::remoteData);
-        connect(sock,&RemoteSocket::disconnected,this,&ClientSocket::remoteDisCon);
-        socketList.insert(data.socketID,sock);
-    } else {
-        sentRemoteDisCon(data.socketID);
-        sock->deleteLater();
-    }
+    connect(sock,&RemoteSocket::readReadly,this,&ClientSocket::remoteData);
+    connect(sock,&RemoteSocket::disconnected,this,&ClientSocket::remoteDisCon);
+    socketList.insert(data.socketID,sock);
 }
 
 void ClientSocket::handleDisCon()
@@ -128,7 +108,7 @@ void ClientSocket::handleDisCon()
     RemoteSocket * sock = socketList.value(data.socketID,nullptr);
     if (sock != nullptr) {
         socketList.remove(data.socketID);
-        if(sock->state() == QTcpSocket::ConnectedState) {
+        if(sock->state() == QAsioTcpSocket::ConnectedState) {
             sock->disconnectFromHost();
         } else {
             sock->deleteLater();
@@ -140,7 +120,7 @@ void ClientSocket::handleSwapData()
 {
     RemoteSocket * sock = socketList.value(data.socketID,nullptr);
     if (sock != nullptr && decryptClientData(data)) {
-        sock->write(data.data);
+        sock->Write(data.data);
     } else {
         data.operater = 2;
         data.data.clear();
@@ -199,7 +179,3 @@ bool ClientSocket::decryptClientData(swapData &data)
     return decryptData(aes,data.data);
 }
 
-void ClientSocket::deleteThis()
-{
-    this->~ClientSocket();
-}
