@@ -1,5 +1,8 @@
-﻿#include "clientsocket.h"
-//#include <QHostAddress>
+﻿#ifdef _MSC_VER
+#pragma execution_character_set("utf-8")
+#endif
+
+#include "clientsocket.h"
 #include <QThread>
 #include "userconfig.h"
 
