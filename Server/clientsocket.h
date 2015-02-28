@@ -4,6 +4,7 @@
 #include "remotesocket.h"
 #include "../common/datastruct.h"
 #include <QMap>
+#include <QThread>
 
 class ThreadServer;
 
@@ -33,9 +34,17 @@ protected:
     inline void sentRemoteDisCon(int socketId);
 
 protected:
-    explicit ClientSocket(asio::ip::tcp::socket * socket, QObject *parent = 0);
+    ClientSocket(int bysize);
     friend class ThreadServer;
     Q_DISABLE_COPY(ClientSocket)
+
+    inline void connectSlots(int id) {
+        socketID = id;
+        connect(this,&ClientSocket::readReadly,this,&ClientSocket::clientData);
+        connect(this,&ClientSocket::disconnected, [&](){
+            emit sentDiscon(QThread::currentThread(),socketID);//发送断开连接的用户信息
+        });
+    }
 private:
     int socketID;
     QMap<int,RemoteSocket *> socketList;

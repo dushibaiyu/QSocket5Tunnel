@@ -19,7 +19,7 @@ public slots:
     void removeThread(QThread * thread,int id);
 
 protected:
-    void incomingConnection(asio::ip::tcp::socket *socket);
+    void incomingConnection();
 
 private:
     ThreadHandle handler;

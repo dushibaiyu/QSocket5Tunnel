@@ -3,18 +3,11 @@
 #endif
 
 #include "clientsocket.h"
-#include <QThread>
 #include "userconfig.h"
 
-ClientSocket::ClientSocket(asio::ip::tcp::socket * socket, QObject *parent) :
-    QAsioTcpSocket(socket,4096,parent),userID(-1),lastsize(0),aes(nullptr)
-{
-    socketID = socketDescriptor();
-    connect(this,&ClientSocket::readReadly,this,&ClientSocket::clientData);
-    connect(this,&ClientSocket::disconnected, [&](){
-        emit sentDiscon(QThread::currentThread(),socketID);//发送断开连接的用户信息
-    });
-}
+ClientSocket::ClientSocket(int bysize) :
+    QAsioTcpSocket(bysize,0),userID(-1),lastsize(0),aes(nullptr)
+{}
 
 ClientSocket::~ClientSocket()
 {
@@ -91,7 +84,7 @@ void ClientSocket::remoteDisCon()
         socketList.remove(sock->getSocketID());
         sentRemoteDisCon(sock->getSocketID());
     }
-    sock->deleteLater();
+    delete sock;
 }
 
 void ClientSocket::handleNewCon()
@@ -101,6 +94,7 @@ void ClientSocket::handleNewCon()
     if (newHost.first.isEmpty()) return;
     RemoteSocket * sock = new RemoteSocket(data.socketID,this);
     sock->connectToHost(newHost.first,newHost.second);
+    qDebug() << "new socket" << sock;
     connect(sock,&RemoteSocket::readReadly,this,&ClientSocket::remoteData);
     connect(sock,&RemoteSocket::disconnected,this,&ClientSocket::remoteDisCon);
     socketList.insert(data.socketID,sock);
@@ -114,7 +108,7 @@ void ClientSocket::handleDisCon()
         if(sock->state() == QAsioTcpSocket::ConnectedState) {
             sock->disconnectFromHost();
         } else {
-            sock->deleteLater();
+            delete sock;
         }
     }
 }

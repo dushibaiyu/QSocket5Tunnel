@@ -25,16 +25,22 @@ ThreadServer::~ThreadServer()
 }
 
 
-void ThreadServer::incomingConnection(asio::ip::tcp::socket *socket)
+void ThreadServer::incomingConnection()
 {
-    ClientSocket * soc = new ClientSocket(socket);
-    soc->moveToThread(handler.getThread());
-    int id  = soc->socketDescriptor();
+    ClientSocket * soc = new ClientSocket(4096);
+    int id = -1;
+    if (setNewSocket(soc)) {
+        id  = soc->socketDescriptor();
+    }
     if (id != -1) {
+        soc->moveToThread(handler.getThread());
+        soc->connectSlots(id);
         QObject::connect(soc,&ClientSocket::sentDiscon,this,&ThreadServer::removeThread);
         mutex.lock();
         clients.insert(id,soc);
         mutex.unlock();
+    } else {
+        delete soc;
     }
 }
 
