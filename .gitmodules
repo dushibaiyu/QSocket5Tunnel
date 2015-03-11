@@ -1,3 +1,0 @@
-[submodule "Server/QAsioSocket"]
-	path = Server/QAsioSocket
-	url = https://git.oschina.net/dushibaiyu/QAsioSocket.git
