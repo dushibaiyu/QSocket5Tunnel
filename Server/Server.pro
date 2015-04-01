@@ -12,8 +12,11 @@ TARGET = QS5ServerTunnel
 CONFIG   += console
 CONFIG   -= app_bundle
 
+win32:DEFINES += _WIN32_WINNT=0x0501
+
 DEFINES += USE_ENCRYPT #若要启用加密，就取消此宏注释
-DEFINES += _WIN32_WINNT=0x0501
+DEFINES += QASIOSOCKET_NOLIB
+
 TEMPLATE = app
 
 CONFIG += C++11
@@ -35,11 +38,7 @@ HEADERS += \
     $$PWD/userconfig.h \
     $$PWD/../common/opensslaes.h
 
-INCLUDEPATH += $$PWD/QAsioSocket/include
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/QAsioSocket/lib/ -lQAsioSocket
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/QAsioSocket/lib/ -lQAsioSocketd
-else:unix: LIBS += -L$$PWD/QAsioSocket/lib/ -lQAsioSocket
+include ($$PWD/../../QAsioSocket/QAsioSocket.pri)
 
 win32:INCLUDEPATH += C:/OpenSSL-Win32/include
 win32:DEPENDPATH += C:/OpenSSL-Win32/include
@@ -67,3 +66,8 @@ else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += C:/local/b
 
 unix:LIBS += -lcrypto
 
+unix:!macx: LIBS += -lboost_thread-mt
+
+unix:!macx: LIBS += -lboost_date_time-mt
+
+unix:!macx: LIBS += -lboost_system-mt
