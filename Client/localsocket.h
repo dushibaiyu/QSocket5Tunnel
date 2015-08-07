@@ -1,24 +1,42 @@
 #ifndef LocalSocket_H
 #define LocalSocket_H
 
-#include <QTcpSocket>
+#include <qasiotcpsocket.h>
 
-class LocalSocket : public QTcpSocket
+class LocalSocket: public QObject
 {
     Q_OBJECT
 public:
-    explicit LocalSocket(int id,QObject *parent = 0):
-        QTcpSocket(parent),socketId(id)
+    explicit LocalSocket(QAsioTcpsocket * loc,QObject *parent = 0):
+        QObject(parent), local(loc)
     {
-        this->setSocketDescriptor(id);
-    }
-    int getSocketID() const
-    {
-        return this->socketId;
+        id = local->socketDescriptor();
+        connect(local,&QAsioTcpsocket::disConnected,this,&LocalSocket::disConnected,Qt::DirectConnection);
+        connect(local,&QAsioTcpsocket::sentReadData,this,&LocalSocket::readData,Qt::DirectConnection);
+        local->do_start();
     }
 
+    inline void write(const QByteArray &  data) {local->write(data);}
+    inline void write(const char * data, int size = -1) {local->write(data,size);}
+
+    inline void close() {local->disconnectFromHost();}
+
+    inline int getID() {return id;}
+
+signals:
+    void disConnect(int id);
+protected slots:
+    void readData(const QByteArray & data);
+
+    void disConnected();
 private:
-    int socketId;
+    QAsioTcpsocket * local;
+    int id;
+
+    QAsioTcpsocket * server;
 };
 
 #endif // LocalSocket_H
+
+void LocalSocket::readData(const QByteArray & data)
+{}
