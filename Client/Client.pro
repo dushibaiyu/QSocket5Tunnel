@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui core-private
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,13 +18,15 @@ CONFIG += C++11
 SOURCES += \
         $$PWD/main.cpp\
         $$PWD/mainwindow.cpp \
-        $$PWD/configclass.cpp
+        $$PWD/configclass.cpp \
+    socket5server.cpp
 
 
 HEADERS  += \
         $$PWD/mainwindow.h \
         $$PWD/localsocket.h \
-        $$PWD/configclass.h
+        $$PWD/configclass.h \
+    socket5server.h
 
 
 FORMS    += $$PWD/mainwindow.ui
