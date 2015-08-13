@@ -27,7 +27,8 @@ HEADERS  += \
         $$PWD/mainwindow.h \
         $$PWD/localsocket.h \
         $$PWD/configclass.h \
-    socket5server.h
+    socket5server.h \
+    ../common/datastruct.h
 
 
 FORMS    += $$PWD/mainwindow.ui
@@ -39,3 +40,4 @@ RC_ICONS = $$PWD/rc/connecd.ico
 
 
 include ($$PWD/../../QAsioSocket/QAsioSocket.pri)
+include ($$PWD/../../QAes/QAes/QAes.pri)

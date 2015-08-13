@@ -95,15 +95,10 @@ void LocalSocket::readData(const QByteArray & data)
 
         ba = buf.read(2);
         qint16 port = qFromBigEndian<qint16>((uchar*)ba.constData());
-
         socket.connectToHost(host,port);
 
 
         repData.append(ba);
-
-//        host.append("::");
-//        host.append(host.number(port));
-//        server->addNewClient(id,this,host);
 
         state_ = Done;
     }
