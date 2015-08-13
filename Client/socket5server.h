@@ -13,7 +13,7 @@ public:
     explicit Socket5Server(QObject *parent = 0);
     ~Socket5Server();
 
-    void addNewClient(int id,LocalSocket * sock,const QString & host);
+    void addNewClient(int id,LocalSocket * sock,const QString & host){}
 
 signals:
 
@@ -27,7 +27,7 @@ public slots:
 
 protected:
     void newSocket(QAsioTcpsocket * socket);
-    void readData(const QByteArray & data);
+//    void readData(const QByteArray & data);
 private:
     QAsioTcpServer * server_;
     QAsioTcpsocket * socket_;

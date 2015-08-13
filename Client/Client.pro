@@ -19,7 +19,8 @@ SOURCES += \
         $$PWD/main.cpp\
         $$PWD/mainwindow.cpp \
         $$PWD/configclass.cpp \
-    socket5server.cpp
+    socket5server.cpp \
+    localsocket.cpp
 
 
 HEADERS  += \

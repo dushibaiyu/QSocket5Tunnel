@@ -1,7 +1,7 @@
 ﻿#ifndef CONFIGCLASS_H
 #define CONFIGCLASS_H
 #include <QString>
-#include "../common/datastruct.h"
+//#include "../common/datastruct.h"
 
 class ConfigClass
 {

@@ -28,8 +28,8 @@ void ConfigClass::loadSetting()
     user = sett.value("config/user").toString();
     QByteArray data = sett.value("config/password").toByteArray();
     if (!data.isEmpty()) {
-        OpensslAES aes(pass);
-        data = aes.decrypt(data);
+//        OpensslAES aes(pass);
+//        data = aes.decrypt(data);
         password = QString::fromUtf8(data);
     }
 }
@@ -41,8 +41,8 @@ void ConfigClass::saveSetting()
     sett.setValue("config/serverPort",serverPort);
     sett.setValue("config/localPort",localPort);
     sett.setValue("config/user",user);
-    OpensslAES aes(pass);
+//    OpensslAES aes(pass);
     QByteArray data = password.toUtf8();
-    data = aes.encrypt(data);
+//    data = aes.encrypt(data);
     sett.setValue("config/password",data);
 }

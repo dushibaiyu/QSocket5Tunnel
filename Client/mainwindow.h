@@ -1,7 +1,7 @@
 ﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "tcpserver.h"
+#include "socket5server.h"
 #include <QMainWindow>
 
 namespace Ui {
@@ -25,7 +25,7 @@ protected:
     void initUI();
 private:
     Ui::MainWindow *ui;
-    TcpServer * ser;
+    Socket5Server * ser;
     QSystemTrayIcon * trayIcon;
 };
 
