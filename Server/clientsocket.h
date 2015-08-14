@@ -1,61 +1,71 @@
 ﻿#ifndef ClientSocket_H
 #define ClientSocket_H
 
-#include "remotesocket.h"
+#include "qasiotcpsocket.h"
 #include "../common/datastruct.h"
 #include <QMap>
-#include <QThread>
+#include <QBuffer>
+#include <QReadWriteLock>
 
-class ThreadServer;
+class RemoteSocket;
 
-class ClientSocket : public QAsioTcpSocket
+class ClientSocket : public QObject
 {
     Q_OBJECT
 public:
+    explicit ClientSocket(QAsioTcpsocket * soc,QObject * parent = 0);
     ~ClientSocket();
 
-signals:
-    void sentDiscon(QThread * th,int id);
+    const QAesWrap & getAes() const {return *aes;}
 
-protected slots:
-    void remoteData();
-    void remoteDisCon();
-    void clientData();
-
-protected:
-    void handleSwapData();
-    void handleUserLog();
-    void handleNewCon();
-    void handleDisCon();
-
-    inline bool sentClientData();
-
-    bool decryptClientData(swapData & data);
-    inline void sentRemoteDisCon(int socketId);
-
-protected:
-    ClientSocket(int bysize);
-    friend class ThreadServer;
-    Q_DISABLE_COPY(ClientSocket)
-
-    inline void connectSlots(int id) {
-        socketID = id;
-        connect(this,&ClientSocket::readReadly,this,&ClientSocket::clientData);
-        connect(this,&ClientSocket::disconnected, [&](){
-            emit sentDiscon(QThread::currentThread(),socketID);//发送断开连接的用户信息
-        });
+    inline void write(const QByteArray & data){
+        revSize += (data.size() - 9);
+        socket_->write(data);
     }
+
+
+    inline RemoteSocket * removeConnet(int id) {
+            lock.lockForRead();
+            auto tp = socketList.value(id,nullptr);
+            lock.unlock();
+            if (tp != nullptr) {
+                lock.lockForWrite();
+                clients.remove(id);
+                lock.unlock();
+            }
+            return tp;
+    }
+
+    inline void newLink(bool islink,int id) {
+        QByteArray data;
+        if (islink) {
+            data.setNum(1);
+        } else {
+            data.setNum(0);
+        }
+        socket_->write(serializeData(getAes(),NewLink,id,data));
+    }
+
+    quint64 GetSize() const {return getSize;}
+    quint64 RevSize() const {return revSize;}
+signals:
+    void socketDis(ClientSocket * client);
+protected slots:
+    void readData(const QByteArray & data);
+
 private:
-    int socketID;
+    QReadWriteLock lock;
     QMap<int,RemoteSocket *> socketList;
-    qint32 userID;
-    QString token;
-    qulonglong lastsize;
-    OpensslAES * aes;
-private://临时变量，放到类里，优化每次分配
-    swapData data;
-    QByteArray bytearry,basize;
-    QPair<QString , qint16> newHost;
+    QString UserName;
+    uint lastSize;
+    QAesWrap * aes;
+    QBuffer buffer;
+
+    bool isKey;
+    QAsioTcpsocket * socket_;
+    quint64 getSize,revSize;
+
+    Q_DISABLE_COPY(ClientSocket)
 };
 
 #endif // ClientSocket_H

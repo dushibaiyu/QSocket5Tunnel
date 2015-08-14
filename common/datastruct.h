@@ -35,9 +35,9 @@ enum OperaterType {
  * 长度和socketID 是数字类型，以大端的方式转换的
 */
 
-inline QByteArray serializeData(QAesWrap * aes,OperaterType type,int id,const QByteArray data)
+inline QByteArray serializeData(const QAesWrap & aes,OperaterType type,int id,const QByteArray data)
 {
-    int size = data.size() + 5;
+    uint size = data.size() + 5;
     char str[4] = {0};
     QByteArray rdata(size + 4,0);
     char * rd = rdata.data();
@@ -50,12 +50,22 @@ inline QByteArray serializeData(QAesWrap * aes,OperaterType type,int id,const QB
     memcpy(rd,str,4);
     rd += 4;
     QByteArray out;
-    aes->encrypt(data,out,QAesWrap::AES_CTR);
+    aes.encrypt(data,out,QAesWrap::AES_CTR);
     memcpy(rd,out.data(),size - 5 );
     return rdata;
 }
 
-deserializeData()
-{}
+inline QByteArray deserializeData(const QAesWrap & aes,OperaterType & type,int & id,const QByteArray data)
+{
+    QByteArray rdata;
+    aes.decrypt(data,rdata,QAesWrap::AES_CTR);
+    char str[4] = {0};
+    type = OperaterType((int)rdata.at(0));
+    char * rd = rdata.data();
+    ++ rd;
+    memcpy(rd,str,4);
+    id = qFromBigEndian<int>(str);
+    return rdata.mid(5);
+}
 
 #endif // DATASTRUCT_H

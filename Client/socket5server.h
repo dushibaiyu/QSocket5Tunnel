@@ -3,6 +3,11 @@
 
 #include <QObject>
 #include <qasiotcpserver.h>
+#include <QMap>
+#include <QReadWriteLock>
+#include <qaeswrap.h>
+#include <QBuffer>
+#include "../common/datastruct.h"
 
 class LocalSocket;
 
@@ -13,10 +18,8 @@ public:
     explicit Socket5Server(QObject *parent = 0);
     ~Socket5Server();
 
-    void addNewClient(int id,LocalSocket * sock,const QString & host){}
-
 signals:
-
+    void socketDisconnet();
 public slots:
     bool Listen(const QString & ip,qint16 port = 6666){
         if (ip.isEmpty())
@@ -25,12 +28,44 @@ public slots:
             return server_->listen(ip,port);
     }
 
-protected:
+    inline void newConnet(const QString & host,int id,LocalSocket * socket) {
+        lock.lockForWrite();
+        clients.insert(id,socket);
+        lock.unlock();
+        socket_->write(serializeData(getAes(),NewLink,id,host.toUtf8()));
+    }
+
+    inline LocalSocket * removeConnet(int id) {
+            lock.lockForRead();
+            auto tp = clients.value(id,nullptr);
+            lock.unlock();
+            if (tp != nullptr) {
+                lock.lockForWrite();
+                clients.remove(id);
+                lock.unlock();
+            }
+            return tp;
+    }
+
+    inline void write(const QByteArray & data) {
+        socket_->write(data);
+    }
+
+
+    inline const QAesWrap & getAes() const {return *aes;}
+protected slots:
     void newSocket(QAsioTcpsocket * socket);
-//    void readData(const QByteArray & data);
+    void readData(const QByteArray & data);
+    void socketDis();
 private:
     QAsioTcpServer * server_;
     QAsioTcpsocket * socket_;
+    QMap<int,LocalSocket *> clients;
+    QReadWriteLock lock;
+    QAesWrap * aes;
+    bool isHaveKey;
+    QBuffer buffer;
+    uint lastSize;
 };
 
 #endif // SOCKET5SERVER_H

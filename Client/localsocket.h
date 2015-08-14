@@ -22,16 +22,13 @@ public:
         QObject(parent), local(loc),state_(NeedCheck),server(server_)
     {
         id = local->socketDescriptor();
-        connect(local,&QAsioTcpsocket::disConnected,[&](){emit disConnect(id);socket.disconnectFromHost();deleteLater();});
+        connect(local,&QAsioTcpsocket::disConnected,[&](){
+            if (server->removeConnet(id) != nullptr) {
+                server->write(serializeData(server->getAes(),DisLink,id,QString()));
+            }
+            deleteLater();
+        });
         connect(local,&QAsioTcpsocket::sentReadData,this,&LocalSocket::readData,Qt::DirectConnection);
-        connect(&socket,&QAsioTcpsocket::connected,[&](){this->linkSuess();qDebug() << " &socket,&QAsioTcpsocket::connected" ;});
-        connect(&socket,&QAsioTcpsocket::disConnected,[&](){ close();
-            this->deleteLater();
-        });
-        connect(&socket,&QAsioTcpsocket::sentReadData,[&](const QByteArray & data){
-            qDebug() << " &socket,&QAsioTcpsocket::sendData" ;
-            local->write(data);
-        });
         local->do_start();
     }
 
@@ -47,7 +44,8 @@ public:
 
     inline int getID() {return id;}
 
-    inline void linkSuess() {
+    inline void linkSuess(bool islink) {
+        if (!islink) repData[2] = 0X04;
         local->write(repData);
     }
 
@@ -57,7 +55,6 @@ protected slots:
     void readData(const QByteArray & data);
 private:
     QAsioTcpsocket * local;
-    QAsioTcpsocket socket;
     int id;
     State state_;
     Socket5Server * server;

@@ -1,39 +1,51 @@
 ﻿#ifndef REMOTESOCKET_H
 #define REMOTESOCKET_H
 
-#include "qasiotcpsocket.h"
+#include "clientsocket.h"
 
-class RemoteSocket : public QAsioTcpSocket
+class RemoteSocket : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteSocket(int id,QObject *parent = 0):
-        QAsioTcpSocket(4096,parent),socketId(id)
+    explicit RemoteSocket(ClientSocket * soc,int id,QObject *parent = 0): QObject(parent),
+        socket_(new QAsioTcpsocket(4096)),remote(soc),socketId(id),isLinked(false)
     {
-        connect(this,&RemoteSocket::connected,[&](){
-            if (!lacalData.isEmpty()) {
-                this->write(lacalData);
-                lacalData.clear();
-            }
+        connect(socket_,&QAsioTcpsocket::sentReadData,[&](const QByteArray & data){
+            remote->write(serializeData(remote->getAes(),SwapData,socketId,data));
+        });
+        connect(socket_,&QAsioTcpsocket::connected,[&](){
+            isLinked = true;
+            remote->newLink(true,id);});
+        connect(socket_,&QAsioTcpsocket::disConnected,[&](){
+            if (!isLinked) remote->newLink(false,id);
+            if (remote->removeConnet(id) != nullptr )
+                remote->write(serializeData(remote->getAes(),DisLink,id,QString()));
+            deleteLater();
         });
     }
-    ~RemoteSocket(){}
+    ~RemoteSocket(){
+        delete socket_;
+    }
     int getSocketID() const
     {
         return this->socketId;
     }
 
-    void Write(const QByteArray & data) {
-        if (state() == ConnectingState) {
-            lacalData.append(data);
-        } else {
-            write(data);
-        }
+    inline void write(const QByteArray & data) {
+        socket_->write(data);
     }
 
+    inline void connectTo(const QString & host, qint16 port) {
+        socket_->connectToHost(host,port);
+    }
+    inline void disCon() {
+        socket_->disconnectFromHost();
+    }
 private:
-    QByteArray lacalData;
+    QAsioTcpsocket * socket_;
+    ClientSocket * remote;
     int socketId;
+    bool isLinked;
 };
 
 #endif // REMOTESOCKET_H
