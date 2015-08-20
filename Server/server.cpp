@@ -17,7 +17,7 @@ Server::~Server()
     qDeleteAll(clients.begin(),clients.end());
 }
 
-void Server::newClient(ClientSocket * cl)
+void Server::newClientd(ClientSocket * cl)
 {
     clients.append(cl);
 }

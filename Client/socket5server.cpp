@@ -5,16 +5,17 @@ Socket5Server::Socket5Server(QObject *parent) : QObject(parent),
     server_(new QAsioTcpServer(4096,this)),socket_(new QAsioTcpsocket(4096,this)),
     isHaveKey(false),lastSize(0)
 {
-    aes = nullptr;
+    aes = new QAesWrap(QByteArray("dushibaiyu"),QByteArray("dushibaiyu.com"),QAesWrap::AES_256);
     connect(server_,&QAsioTcpServer::newConnection,this,&Socket5Server::newSocket,Qt::DirectConnection);
     connect(socket_,&QAsioTcpsocket::sentReadData,this,&Socket5Server::readData,Qt::DirectConnection);
     connect(socket_,&QAsioTcpsocket::disConnected,this,&Socket5Server::socketDis);
-    connect(socket_,&QAsioTcpsocket::connected,[&](){/*TODO:发送Key请求*/});
+    connect(socket_,&QAsioTcpsocket::connected,[&](){write(serializeData(getAes(),NeedKey,0,key));});
 }
 
 Socket5Server::~Socket5Server()
 {
     socket_->disconnectFromHost();
+    delete aes;
     delete server_;
     delete socket_;
 }
@@ -39,7 +40,55 @@ void Socket5Server::readData(const QByteArray & data)
         lastSize = qFromBigEndian<uint>((uchar*)str);
     }
     while (buffer->bytesAvailable() >= static_cast<qint64>(lastSize)) {
-//        auto bytearry = buffer->read(lastSize);
+        OperaterType type;
+        int id;
+        QByteArray revdata = deserializeData(getAes(),type,id,buffer->read(lastSize));
+        switch (type) {
+        case NeedKey:
+        {
+            delete aes;
+            aes = new QAesWrap(revdata,revdata,QAesWrap::AES_256);
+            isHaveKey = true;
+        }
+            break;
+        case NewLink:
+        {
+            auto tp = getLocal(id);
+            if (tp != nullptr) {
+                if (revdata.at(0) > 0) {
+                    tp->linkSuess(true);
+                } else {
+                    tp->linkSuess(false);
+                    removeConnet(id);
+                }
+            } else {
+                write(serializeData(getAes(),DisLink,id,QByteArray()));
+            }
+        }
+            break;
+        case DisLink:
+        {
+            auto tp = getLocal(id);
+            if (tp != nullptr) {
+                removeConnet(id);
+                delete tp;
+            }
+        }
+            break;
+        case SwapData:
+        {
+            auto tp = getLocal(id);
+            if (tp != nullptr) {
+                tp->write(revdata);
+            } else {
+                write(serializeData(getAes(),DisLink,id,QByteArray()));
+            }
+        }
+            break;
+        default:
+            write(serializeData(getAes(),DisLink,id,QByteArray()));
+            break;
+        }
         //数据处理
         if (!buffer->atEnd() && buffer->bytesAvailable() > 4) {
             char str[4] = {0};

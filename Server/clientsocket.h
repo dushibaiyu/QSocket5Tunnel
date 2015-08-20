@@ -24,16 +24,17 @@ public:
     }
 
 
-    inline RemoteSocket * removeConnet(int id) {
-            lock.lockForRead();
-            auto tp = socketList.value(id,nullptr);
-            lock.unlock();
-            if (tp != nullptr) {
-                lock.lockForWrite();
-                clients.remove(id);
-                lock.unlock();
-            }
-            return tp;
+    inline void removeConnet(int id) {
+        lock.lockForWrite();
+        socketList.remove(id);
+        lock.unlock();
+    }
+
+    inline RemoteSocket * getRemote(int id){
+        lock.lockForRead();
+        auto tp = socketList.value(id,nullptr);
+        lock.unlock();
+        return tp;
     }
 
     inline void newLink(bool islink,int id) {
@@ -50,9 +51,14 @@ public:
     quint64 RevSize() const {return revSize;}
 signals:
     void socketDis(ClientSocket * client);
+    void getKey(ClientSocket * client,const QByteArray & revData);
+
+public slots:
+    void haveKey(const QByteArray & key);
 protected slots:
     void readData(const QByteArray & data);
 
+    void clear();
 private:
     QReadWriteLock lock;
     QMap<int,RemoteSocket *> socketList;

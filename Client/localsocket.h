@@ -23,8 +23,9 @@ public:
     {
         id = local->socketDescriptor();
         connect(local,&QAsioTcpsocket::disConnected,[&](){
-            if (server->removeConnet(id) != nullptr) {
-                server->write(serializeData(server->getAes(),DisLink,id,QString()));
+            if (server->getLocal(id) != nullptr) {
+                server->write(serializeData(server->getAes(),DisLink,id,QByteArray()));
+                server->removeConnet(id);
             }
             deleteLater();
         });

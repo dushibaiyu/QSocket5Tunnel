@@ -18,8 +18,10 @@ public:
             remote->newLink(true,id);});
         connect(socket_,&QAsioTcpsocket::disConnected,[&](){
             if (!isLinked) remote->newLink(false,id);
-            if (remote->removeConnet(id) != nullptr )
-                remote->write(serializeData(remote->getAes(),DisLink,id,QString()));
+            if (remote->getRemote(id) != nullptr ) {
+                remote->write(serializeData(remote->getAes(),DisLink,id,QByteArray()));
+                remote->removeConnet(id);
+            }
             deleteLater();
         });
     }
@@ -38,7 +40,7 @@ public:
     inline void connectTo(const QString & host, qint16 port) {
         socket_->connectToHost(host,port);
     }
-    inline void disCon() {
+    inline void close() {
         socket_->disconnectFromHost();
     }
 private:

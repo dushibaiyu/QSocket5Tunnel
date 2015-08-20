@@ -35,22 +35,22 @@ public slots:
         socket_->write(serializeData(getAes(),NewLink,id,host.toUtf8()));
     }
 
-    inline LocalSocket * removeConnet(int id) {
-            lock.lockForRead();
-            auto tp = clients.value(id,nullptr);
-            lock.unlock();
-            if (tp != nullptr) {
-                lock.lockForWrite();
-                clients.remove(id);
-                lock.unlock();
-            }
-            return tp;
+    inline void removeConnet(int id) {
+        lock.lockForWrite();
+        clients.remove(id);
+        lock.unlock();
     }
 
     inline void write(const QByteArray & data) {
         socket_->write(data);
     }
 
+    inline LocalSocket * getLocal(int id) {
+        lock.lockForRead();
+        auto tp = clients.value(id,nullptr);
+        lock.unlock();
+        return tp;
+    }
 
     inline const QAesWrap & getAes() const {return *aes;}
 protected slots:
