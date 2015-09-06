@@ -9,7 +9,10 @@ Socket5Server::Socket5Server(QObject *parent) : QObject(parent),
     connect(server_,&QAsioTcpServer::newConnection,this,&Socket5Server::newSocket,Qt::DirectConnection);
     connect(socket_,&QAsioTcpsocket::sentReadData,this,&Socket5Server::readData,Qt::DirectConnection);
     connect(socket_,&QAsioTcpsocket::disConnected,this,&Socket5Server::socketDis);
-    connect(socket_,&QAsioTcpsocket::connected,[&](){write(serializeData(getAes(),NeedKey,0,key));});
+    connect(socket_,&QAsioTcpsocket::connected,[&](){
+        qDebug() << "writeKey = " << user_;
+        write(serializeData(getAes(),NeedKey,0,user_));
+    });
 }
 
 Socket5Server::~Socket5Server()
@@ -22,37 +25,43 @@ Socket5Server::~Socket5Server()
 
 void Socket5Server::newSocket(QAsioTcpsocket * socket)
 {
-    auto st = new LocalSocket(socket);
+    auto st = new LocalSocket(socket,this);
     st->moveToThread(this->thread());
 }
 
 void Socket5Server::readData(const QByteArray & data)
 {
-    if (buffer.atEnd()) // Everything has been read; the buffer is safe to reset
+    if (buffer.isOpen() && buffer.atEnd()) // Everything has been read; the buffer is safe to reset
         buffer.close();
     if (!buffer.isOpen())
         buffer.open(QBuffer::ReadWrite|QBuffer::Truncate);
+    qint64 readPos = buffer.pos();
+    buffer.seek(buffer.size());
     buffer.write(data);
+    buffer.seek(readPos);
     if (lastSize == 0) {
         if (buffer.bytesAvailable() < 4) return;
         char str[4] = {0};
         buffer.read(str,4);
         lastSize = qFromBigEndian<uint>((uchar*)str);
     }
-    while (buffer->bytesAvailable() >= static_cast<qint64>(lastSize)) {
+    while (buffer.bytesAvailable() >= static_cast<qint64>(lastSize)) {
         OperaterType type;
         int id;
-        QByteArray revdata = deserializeData(getAes(),type,id,buffer->read(lastSize));
+        QByteArray revdata = deserializeData(getAes(),type,id,buffer.read(lastSize));
         switch (type) {
         case NeedKey:
         {
+            emit initLink();
             delete aes;
             aes = new QAesWrap(revdata,revdata,QAesWrap::AES_256);
             isHaveKey = true;
+            qDebug() << "getkey = " << revdata;
         }
             break;
         case NewLink:
         {
+            qDebug() << "new Linked " << revdata;
             auto tp = getLocal(id);
             if (tp != nullptr) {
                 if (revdata.at(0) > 0) {
@@ -90,7 +99,7 @@ void Socket5Server::readData(const QByteArray & data)
             break;
         }
         //数据处理
-        if (!buffer->atEnd() && buffer->bytesAvailable() > 4) {
+        if (!buffer.atEnd() && buffer.bytesAvailable() > 4) {
             char str[4] = {0};
             buffer.read(str,4);
             lastSize = qFromBigEndian<uint>((uchar*)str);

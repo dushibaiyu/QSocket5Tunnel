@@ -20,6 +20,7 @@ public:
 
 signals:
     void socketDisconnet();
+    void initLink();//连接成功，并交换key
 public slots:
     bool Listen(const QString & ip,qint16 port = 6666){
         if (ip.isEmpty())
@@ -53,6 +54,12 @@ public slots:
     }
 
     inline const QAesWrap & getAes() const {return *aes;}
+
+    inline void connectToServer(const QString & host,qint16 port, const QString & user) {
+        user_ = user.toLatin1();
+        socket_->connectToHost(host,port);
+        qDebug() << "connectToHost : " << host << "  prot = " << port;
+    }
 protected slots:
     void newSocket(QAsioTcpsocket * socket);
     void readData(const QByteArray & data);
@@ -66,6 +73,7 @@ private:
     bool isHaveKey;
     QBuffer buffer;
     uint lastSize;
+    QByteArray user_;
 };
 
 #endif // SOCKET5SERVER_H

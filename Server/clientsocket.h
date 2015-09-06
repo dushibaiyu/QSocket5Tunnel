@@ -38,11 +38,13 @@ public:
     }
 
     inline void newLink(bool islink,int id) {
+        qDebug() << "newLink  islink = " << islink;
         QByteArray data;
         if (islink) {
             data.setNum(1);
         } else {
             data.setNum(0);
+            removeConnet(id);
         }
         socket_->write(serializeData(getAes(),NewLink,id,data));
     }

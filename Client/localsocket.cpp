@@ -93,6 +93,7 @@ void LocalSocket::readData(const QByteArray & data)
             return;
         }
 
+        qDebug() << "new client";
         ba = buf.read(2);
         qint16 port = qFromBigEndian<qint16>((uchar*)ba.constData());
         host.append("@");

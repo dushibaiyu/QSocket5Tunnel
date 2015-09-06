@@ -24,7 +24,7 @@ signals:
 public slots:
 
 protected slots:
-
+    void getKey(ClientSocket * cl, const QByteArray &);
     void newClientd(ClientSocket * cl);
     void removeClientd(ClientSocket * cl);
 private:

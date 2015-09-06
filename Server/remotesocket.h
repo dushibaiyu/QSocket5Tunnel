@@ -17,10 +17,13 @@ public:
             isLinked = true;
             remote->newLink(true,id);});
         connect(socket_,&QAsioTcpsocket::disConnected,[&](){
-            if (!isLinked) remote->newLink(false,id);
-            if (remote->getRemote(id) != nullptr ) {
-                remote->write(serializeData(remote->getAes(),DisLink,id,QByteArray()));
-                remote->removeConnet(id);
+            if (!isLinked) {
+                remote->newLink(false,id);
+            } else {
+                if (remote->getRemote(id) != nullptr ) {
+                    remote->write(serializeData(remote->getAes(),DisLink,id,QByteArray()));
+                    remote->removeConnet(id);
+                }
             }
             deleteLater();
         });

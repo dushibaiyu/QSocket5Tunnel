@@ -3,7 +3,6 @@
 #include <QDataStream>
 #include <QByteArray>
 #include <QDebug>
-#include "opensslaes.h"
 #include <qaeswrap.h>
 #include <QtEndian>
 
@@ -34,37 +33,41 @@ enum OperaterType {
  * 剩下的字节为数据。
  * 长度和socketID 是数字类型，以大端的方式转换的
 */
-
+//BUG:序列化和反序列化有问题！！！
 inline QByteArray serializeData(const QAesWrap & aes,OperaterType type,int id,const QByteArray & data)
 {
     uint size = data.size() + 5;
     char str[4] = {0};
     QByteArray rdata(size + 4,0);
     char * rd = rdata.data();
-    rd[4] = (char)type;
     qToBigEndian(size,(uchar *)str);
     memcpy(rd,str,4);
-    rd += 5;
+    rd += 4;
+    QByteArray enData(size, 0);
+    char * ed = enData.data();
+    ed[0] = (char)type;
+    ++ ed;
     memset(str,0,4);
     qToBigEndian(id,(uchar *)str);
-    memcpy(rd,str,4);
-    rd += 4;
-    QByteArray out;
-    aes.encrypt(data,out,QAesWrap::AES_CTR);
-    memcpy(rd,out.data(),size - 5 );
+    memcpy(ed,str,4);
+    ed += 4;
+    memcpy(ed,data.data(),data.size());
+//    QByteArray out;
+//    aes.encrypt(enData,out,QAesWrap::AES_CTR);
+    memcpy(rd,enData.data(),enData.size() );
     return rdata;
 }
 
 inline QByteArray deserializeData(const QAesWrap & aes,OperaterType & type,int & id,const QByteArray & data)
 {
-    QByteArray rdata;
-    aes.decrypt(data,rdata,QAesWrap::AES_CTR);
+    QByteArray rdata(data);
+//    aes.decrypt(data,rdata,QAesWrap::AES_CTR);
     char str[4] = {0};
     type = OperaterType((int)rdata.at(0));
     char * rd = rdata.data();
     ++ rd;
-    memcpy(rd,str,4);
-    id = qFromBigEndian<int>(str);
+    memcpy(str,rd,4);
+    id = qFromBigEndian<int>((uchar*)str);
     return rdata.mid(5);
 }
 

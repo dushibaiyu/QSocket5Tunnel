@@ -20,6 +20,7 @@ public:
 protected slots:
     void on_butLogin_clicked();
 
+    void initLink();
 protected:
     void connectSlots();
     void initUI();

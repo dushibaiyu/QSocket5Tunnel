@@ -19,7 +19,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ser = new Socket5Server(this);
     connectSlots();
     trayIcon->show();
-    ser->Listen(QString(),4096);
+    connect(ser,&Socket5Server::initLink,this,&MainWindow::initLink);
+    connect(ser,&Socket5Server::socketDisconnet,[&](){
+        this->ui->stackedWidget->setCurrentIndex(0);
+        qDebug() << "Socket5Server::socketDisconnet";
+    });
 }
 
 MainWindow::~MainWindow()
@@ -35,6 +39,7 @@ void MainWindow::on_butLogin_clicked()
 
     qDebug() << "Wid is  :" << this->winId();
     qDebug() << "button's Wid is  :" << this->ui->butLogin->winId();
+    ser->connectToServer(this->ui->lineServer->text(),this->ui->serPort->value(),"textee");
 //    if (this->ui->lineServer->text().isEmpty() || this->ui->lineUser->text().isEmpty()
 //            || this->ui->linepword->text().isEmpty()) {
 //        QMessageBox::warning(this,tr("信息不全"),tr("请先完善必须信息！"));
@@ -74,6 +79,13 @@ void MainWindow::connectSlots()
 //            this->ui->butLogin->setEnabled(true);
 //        }
 //    });
+}
+
+void MainWindow::initLink()
+{
+    ser->Listen(QString(),4096);
+    this->ui->stackedWidget->setCurrentIndex(1);
+    qDebug() << "Socket5Server::initLink";
 }
 
 void MainWindow::initUI()
