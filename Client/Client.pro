@@ -39,5 +39,5 @@ RESOURCES += \
 RC_ICONS = $$PWD/rc/connecd.ico
 
 
-include ($$PWD/../../QAsioSocket/QAsioSocket.pri)
-include ($$PWD/../../QAes/QAes/QAes.pri)
+include ($$PWD/../3drParty/QAsioSocket/QAsioSocket.pri)
+include ($$PWD/../3drParty/QAes/QAes/QAes.pri)

@@ -1,0 +1,6 @@
+[submodule "QAsioSocket"]
+	path = 3drParty/QAsioSocket
+	url = https://git.oschina.net/dushibaiyu/QAsioSocket.git
+[submodule "QAes"]
+	path = 3drParty/QAes
+	url = https://github.com/dushibaiyu/QAes.git

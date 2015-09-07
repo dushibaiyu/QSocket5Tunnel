@@ -30,8 +30,12 @@ private:
 class SysConfig
 {
 public :
-    SysConfig();
-//    void saveConfig();
+    SysConfig & getConfig() {
+        static SysConfig conf;
+        return conf;
+    }
+
+
     int getBindPort() const
     {return port;}
     int getServerThreads() const
@@ -40,11 +44,11 @@ public :
     {return socketSize;}
     QString getInitPassword() const
     { return password;}
-
     QString getInitSalt() const
     { return salt; }
 
 private:
+    SysConfig();
     int port;
     int serverSize;
     int socketSize;

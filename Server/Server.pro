@@ -34,8 +34,8 @@ HEADERS += \
     $$PWD/userconfig.h \
     server.h
 
-include ($$PWD/../../QAsioSocket/QAsioSocket.pri)
-include ($$PWD/../../QAes/QAes/QAes.pri)
+include ($$PWD/../3drParty/QAsioSocket/QAsioSocket.pri)
+include ($$PWD/../3drParty/QAes/QAes/QAes.pri)
 
 
 

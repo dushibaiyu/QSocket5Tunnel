@@ -58,8 +58,10 @@ UserConfig & UserConfig::getClass()
 SysConfig::SysConfig()
 {
     QSettings seting("SysConfig",QSettings::IniFormat);
-    port = seting.value("bindPort",8888).toInt();
-//    type = seting.value("ThreadType",false).toBool();
-//    size = seting.value("ThreadMax",5).toInt();
+    port = seting.value("bindPort",2048).toInt();
+    serverSize = seting.value("serverThreadSize",2).toInt();
+    socketSize = seting.value("socketThreadSize",3).toInt();
+    password = seting.value("initPassword","dushibaiyu").toString();
+    salt = seting.value("initSalt","dushibaiyu.com").toString();
 }
 

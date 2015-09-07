@@ -33,7 +33,7 @@ enum OperaterType {
  * 剩下的字节为数据。
  * 长度和socketID 是数字类型，以大端的方式转换的
 */
-//BUG:序列化和反序列化有问题！！！
+
 inline QByteArray serializeData(const QAesWrap & aes,OperaterType type,int id,const QByteArray & data)
 {
     uint size = data.size() + 5;
