@@ -48,26 +48,28 @@ inline QByteArray serializeData(const QAesWrap & aes,OperaterType type,int id,co
     ed[0] = (char)type;
     ++ ed;
     memset(str,0,4);
-    qToBigEndian(id,(uchar *)str);
+    uint uid = (uint)id;
+    qToBigEndian(uid,(uchar *)str);
     memcpy(ed,str,4);
     ed += 4;
     memcpy(ed,data.data(),data.size());
-//    QByteArray out;
-//    aes.encrypt(enData,out,QAesWrap::AES_CTR);
-    memcpy(rd,enData.data(),enData.size() );
+    QByteArray out;
+    aes.encrypt(enData,out,QAesWrap::AES_CTR);
+    memcpy(rd,out.data(),out.size() );
     return rdata;
 }
 
 inline QByteArray deserializeData(const QAesWrap & aes,OperaterType & type,int & id,const QByteArray & data)
 {
-    QByteArray rdata(data);
-//    aes.decrypt(data,rdata,QAesWrap::AES_CTR);
+    QByteArray rdata;
+    aes.decrypt(data,rdata,QAesWrap::AES_CTR);
     char str[4] = {0};
     type = OperaterType((int)rdata.at(0));
     char * rd = rdata.data();
     ++ rd;
     memcpy(str,rd,4);
-    id = qFromBigEndian<int>((uchar*)str);
+    uint uid = qFromBigEndian<int>((uchar*)str);
+    id  = (int)uid;
     return rdata.mid(5);
 }
 

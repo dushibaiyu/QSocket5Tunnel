@@ -18,6 +18,8 @@ Socket5Server::Socket5Server(QObject *parent) : QObject(parent),
 Socket5Server::~Socket5Server()
 {
     socket_->disconnectFromHost();
+    if (buffer.isOpen())
+        buffer.close();
     delete aes;
     delete server_;
     delete socket_;
@@ -49,6 +51,7 @@ void Socket5Server::readData(const QByteArray & data)
         OperaterType type;
         int id;
         QByteArray revdata = deserializeData(getAes(),type,id,buffer.read(lastSize));
+        qDebug() << "Socket5Server::readData id = " << id;
         switch (type) {
         case NeedKey:
         {
@@ -95,8 +98,10 @@ void Socket5Server::readData(const QByteArray & data)
         }
             break;
         default:
-            write(serializeData(getAes(),DisLink,id,QByteArray()));
-            break;
+            socket_->disconnectFromHost();
+            if (buffer.isOpen())
+                buffer.close();
+            return;
         }
         //数据处理
         if (!buffer.atEnd() && buffer.bytesAvailable() > 4) {
@@ -114,6 +119,9 @@ void Socket5Server::socketDis()
 {
     isHaveKey = false;
     server_->close();
+    if (buffer.isOpen()) {
+       buffer.close();
+    }
     lock.lockForWrite();
     for (auto it = clients.begin(); it != clients.end(); ++it) {
         it.value()->close();

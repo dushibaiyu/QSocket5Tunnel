@@ -38,7 +38,7 @@ public:
     }
 
     inline void newLink(bool islink,int id) {
-        qDebug() << "newLink  islink = " << islink;
+        qDebug() << "newLink  islink = " << islink << "  id  =" << id;
         QByteArray data;
         if (islink) {
             data.setNum(1);
@@ -65,12 +65,12 @@ private:
     QReadWriteLock lock;
     QMap<int,RemoteSocket *> socketList;
     QString UserName;
-    uint lastSize;
     QAesWrap * aes;
     QBuffer buffer;
 
-    bool isKey;
     QAsioTcpsocket * socket_;
+    bool isKey;
+    uint lastSize;
     quint64 getSize,revSize;
 
     Q_DISABLE_COPY(ClientSocket)

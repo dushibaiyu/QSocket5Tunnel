@@ -22,6 +22,7 @@ public:
         QObject(parent), local(loc),state_(NeedCheck),server(server_)
     {
         id = local->socketDescriptor();
+        qDebug() << "LocalSocket id = " << id;
         connect(local,&QAsioTcpsocket::disConnected,[&](){
             if (server->getLocal(id) != nullptr) {
                 server->write(serializeData(server->getAes(),DisLink,id,QByteArray()));

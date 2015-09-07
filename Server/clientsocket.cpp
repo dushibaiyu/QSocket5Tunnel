@@ -2,7 +2,7 @@
 #include "remotesocket.h"
 
 ClientSocket::ClientSocket(QAsioTcpsocket * soc,QObject * parent) :
-    QObject(parent),lastSize(0),socket_(soc),isKey(false)
+    QObject(parent),socket_(soc),isKey(false),lastSize(0)
 {
     aes = new QAesWrap(QByteArray("dushibaiyu"),QByteArray("dushibaiyu.com"),QAesWrap::AES_256);
     connect(socket_,&QAsioTcpsocket::sentReadData,this,&ClientSocket::readData,Qt::DirectConnection);
@@ -14,6 +14,8 @@ ClientSocket::~ClientSocket()
 {
     clear();
     socket_->disconnectFromHost();
+    if (buffer.isOpen())
+        buffer.close();
     delete aes;
     delete socket_;
 }
@@ -36,7 +38,7 @@ void ClientSocket::readData(const QByteArray & data)
     }
     while (buffer.bytesAvailable() >= static_cast<qint64>(lastSize)) {
         OperaterType type;
-        int id;
+        int id = 0;
         QByteArray revdata = deserializeData(getAes(),type,id,buffer.read(lastSize));
         qDebug() << "ClientSocket::readData : type = " << type << "  id = " << id;
         switch (type) {
@@ -79,8 +81,10 @@ void ClientSocket::readData(const QByteArray & data)
         }
             break;
         default:
-            write(serializeData(getAes(),DisLink,id,QByteArray()));
-            break;
+            socket_->disconnectFromHost();
+            if (buffer.isOpen())
+                buffer.close();
+            return;
         }
         if (!buffer.atEnd() && buffer.bytesAvailable() > 4) {
             char str[4] = {0};
@@ -98,7 +102,10 @@ void ClientSocket::haveKey(const QByteArray & key)
 {
     if (isKey) return;
     qDebug () << "ClientSocket::haveKey = " << key;
-    if (key.isEmpty()) socket_->disconnectFromHost();
+    if (key.isEmpty()) {
+        socket_->disconnectFromHost();
+        return;
+    }
     isKey = true;
     write(serializeData(getAes(),NeedKey,0,key));
     delete aes;

@@ -31,16 +31,24 @@ class SysConfig
 {
 public :
     SysConfig();
-    void saveConfig();
+//    void saveConfig();
     int getBindPort() const
     {return port;}
-//    bool getThreadType() const
-//    {return type;}
-    int getMaxThread() const
-    {return size;}
+    int getServerThreads() const
+    {return serverSize;}
+    int getSocketThreads() const
+    {return socketSize;}
+    QString getInitPassword() const
+    { return password;}
+
+    QString getInitSalt() const
+    { return salt; }
+
 private:
     int port;
-    int size;
-//    bool type;//true:固定每个链接处理几个，false：固定线程数
+    int serverSize;
+    int socketSize;
+    QString password;
+    QString salt;
 };
 #endif // USERCONFIG_H

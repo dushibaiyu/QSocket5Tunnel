@@ -15,14 +15,14 @@ public:
         });
         connect(socket_,&QAsioTcpsocket::connected,[&](){
             isLinked = true;
-            remote->newLink(true,id);});
+            remote->newLink(true,socketId);});
         connect(socket_,&QAsioTcpsocket::disConnected,[&](){
             if (!isLinked) {
-                remote->newLink(false,id);
+                remote->newLink(false,socketId);
             } else {
-                if (remote->getRemote(id) != nullptr ) {
+                if (remote->getRemote(socketId) != nullptr ) {
                     remote->write(serializeData(remote->getAes(),DisLink,id,QByteArray()));
-                    remote->removeConnet(id);
+                    remote->removeConnet(socketId);
                 }
             }
             deleteLater();

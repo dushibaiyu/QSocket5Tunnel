@@ -60,6 +60,6 @@ SysConfig::SysConfig()
     QSettings seting("SysConfig",QSettings::IniFormat);
     port = seting.value("bindPort",8888).toInt();
 //    type = seting.value("ThreadType",false).toBool();
-    size = seting.value("ThreadMax",5).toInt();
+//    size = seting.value("ThreadMax",5).toInt();
 }
 
