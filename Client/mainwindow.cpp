@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ser,&Socket5Server::initLink,this,&MainWindow::initLink);
     connect(ser,&Socket5Server::socketDisconnet,[&](){
         this->ui->stackedWidget->setCurrentIndex(0);
-        qDebug() << "Socket5Server::socketDisconnet";
     });
 }
 
@@ -34,11 +33,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_butLogin_clicked()
 {
-    qDebug() << "is top lev :" << (this->isTopLevel() ? "true" : "false" );
-    qDebug() << "button is top lev :" << (this->ui->butLogin->isTopLevel() ? "true" : "false");
-
-    qDebug() << "Wid is  :" << this->winId();
-    qDebug() << "button's Wid is  :" << this->ui->butLogin->winId();
     ser->connectToServer(this->ui->lineServer->text(),this->ui->serPort->value(),"textee");
 //    if (this->ui->lineServer->text().isEmpty() || this->ui->lineUser->text().isEmpty()
 //            || this->ui->linepword->text().isEmpty()) {
